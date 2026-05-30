@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa Fitness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #080810;
+    --bg1:      #0e0e1c;
+    --bg2:      #14142a;
+    --bg3:      #1c1c38;
+    --border:   #ffffff0d;
+    --border2:  #ffffff18;
+    --border3:  #ffffff2a;
+    --text:     #f0f0ff;
+    --text2:    #9090b8;
+    --text3:    #55557a;
+    --accent:   #c8ff00;
+    --accent2:  #a0d400;
+    --purple:   #7c5cfc;
+    --purple2:  #5a3de8;
+    --red:      #ff4d6a;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body:    'DM Sans', sans-serif;
+    --font-mono:    'DM Mono', monospace;
+    --radius:   10px;
+    --radius-lg: 16px;
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+
+  /* ─── AUTH ───────────────────────────────────── */
+  #authScreen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .auth-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 80%, #7c5cfc18 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 20%, #c8ff0010 0%, transparent 70%);
+  }
+  .auth-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+  }
+  .auth-card {
+    position: relative; z-index: 1; width: 100%; max-width: 420px; margin: 1rem;
+    background: var(--bg1); border: 1px solid var(--border2); border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem; animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+  .auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+  .auth-logo-mark {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--accent); display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .auth-logo-text { font-family: var(--font-display); font-size: 28px; letter-spacing: 2px; color: var(--text); line-height: 1; }
+  .auth-logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 3px; }
+
+  .auth-headline { font-family: var(--font-display); font-size: 36px; letter-spacing: 2px; color: var(--text); line-height: 1.1; margin-bottom: 0.4rem; }
+  .auth-headline span { color: var(--accent); }
+  .auth-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.75rem; }
+
+  .field-label { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+  .field-input {
+    width: 100%; padding: 12px 14px; font-size: 14px; font-family: var(--font-body);
+    background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius);
+    color: var(--text); outline: none; transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input.error { border-color: var(--red); }
+
+  .auth-btn {
+    width: 100%; margin-top: 1.25rem; padding: 13px;
+    font-family: var(--font-display); font-size: 20px; letter-spacing: 3px;
+    background: var(--accent); color: #080810; border: none; border-radius: var(--radius);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .auth-btn:hover:not(:disabled) { background: #deff22; transform: translateY(-1px); }
+  .auth-btn:active { transform: translateY(0); }
+  .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .auth-error {
+    display: none; margin-top: 10px; font-size: 12px; color: var(--red);
+    padding: 8px 12px; background: #ff4d6a12; border: 1px solid #ff4d6a22; border-radius: 8px;
+  }
+  .auth-error.show { display: block; }
+  .auth-note { font-size: 11px; color: var(--text3); text-align: center; margin-top: 1.25rem; }
+
+  /* ─── MAIN APP ────────────────────────────────── */
+  #mainApp { display: none; min-height: 100vh; flex-direction: column; }
+  #mainApp.visible { display: flex; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem; height: 54px; border-bottom: 1px solid var(--border);
+    background: var(--bg1); flex-shrink: 0; position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 3px; color: var(--text); }
+  .topbar-logo span { color: var(--accent); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg2); border: 1px solid var(--border2); border-radius: 30px;
+    padding: 5px 12px 5px 6px;
+  }
+  .avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #080810; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .user-email { font-size: 12px; color: var(--text2); font-family: var(--font-mono); }
+  .logout-btn {
+    background: none; border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text3); padding: 5px 10px; cursor: pointer; font-size: 12px;
+    font-family: var(--font-body); transition: all 0.15s;
+  }
+  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .app-body { display: flex; flex: 1; overflow: hidden; }
+
+  .sidebar {
+    width: 230px; background: var(--bg1); border-right: 1px solid var(--border);
+    overflow-y: auto; flex-shrink: 0; padding: 1rem 0;
+  }
+  .nav-section {
+    font-size: 10px; color: var(--text3); letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 12px 18px 5px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 18px;
+    font-size: 13px; color: var(--text2); cursor: pointer;
+    border-left: 2px solid transparent; transition: all 0.15s;
+  }
+  .nav-item:hover { color: var(--text); background: var(--bg2); }
+  .nav-item.active { color: var(--accent); background: var(--bg2); border-left-color: var(--accent); }
+  .nav-icon { font-size: 16px; opacity: 0.8; }
+  .nav-bonus {
+    margin-left: auto; font-size: 9px; background: var(--accent); color: #080810;
+    padding: 2px 6px; border-radius: 20px; font-weight: 600; letter-spacing: 0.05em;
+  }
+
+  .content { flex: 1; overflow-y: auto; padding: 2rem; background: var(--bg); }
+  .page { display: none; animation: fadeIn 0.25s ease both; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+  .page-title {
+    font-family: var(--font-display); font-size: 42px; letter-spacing: 3px; color: var(--text);
+    line-height: 1; margin-bottom: 4px;
+  }
+  .page-title span { color: var(--accent); }
+  .page-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.75rem; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.75rem; }
+  .stat-box {
+    background: var(--bg1); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+  .stat-num { font-family: var(--font-display); font-size: 32px; letter-spacing: 2px; color: var(--accent); }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .mod-card {
+    background: var(--bg1); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.25rem; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .mod-card::before {
+    content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s;
+    background: linear-gradient(135deg, var(--accent)08, transparent);
+  }
+  .mod-card:hover { border-color: var(--accent)44; transform: translateY(-2px); }
+  .mod-card:hover::before { opacity: 1; }
+  .mod-card.bonus { border-color: var(--accent)22; }
+  .mod-emoji { font-size: 28px; margin-bottom: 10px; display: block; }
+  .mod-name { font-family: var(--font-display); font-size: 16px; letter-spacing: 1px; color: var(--text); margin-bottom: 4px; }
+  .mod-desc { font-size: 11px; color: var(--text3); }
+  .mod-count { font-size: 11px; color: var(--accent); margin-top: 10px; }
+  .mod-bonus-tag {
+    display: inline-block; margin-top: 6px; font-size: 9px; background: var(--accent);
+    color: #080810; padding: 2px 7px; border-radius: 20px; font-weight: 700; letter-spacing: 0.05em;
+  }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text3); cursor: pointer; background: none; border: none;
+    padding: 0; margin-bottom: 1.25rem; transition: color 0.15s; font-family: var(--font-body);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  .pdf-row {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg1); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 13px 16px; margin-bottom: 8px; transition: border-color 0.15s;
+  }
+  .pdf-row:hover { border-color: var(--border2); }
+  .pdf-icon-wrap {
+    width: 36px; height: 36px; border-radius: 8px; background: #ff4d6a14;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .pdf-meta { flex: 1; }
+  .pdf-name { font-size: 13px; color: var(--text); }
+  .pdf-size { font-size: 11px; color: var(--text3); font-family: var(--font-mono); }
+  .pdf-btns { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border2);
+    background: transparent; color: var(--text2); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent)10; }
+
+  /* ─── ADMIN ─────────────────────────────────── */
+  .hotmart-bar {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--purple)12; border: 1px solid var(--purple)33; border-radius: var(--radius);
+    padding: 12px 16px; margin-bottom: 1.5rem;
+  }
+  .hotmart-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+  .hotmart-txt { font-size: 12px; color: var(--text2); }
+  .hotmart-txt strong { color: var(--accent); }
+
+  .add-row { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+  .add-row input {
+    flex: 1; padding: 10px 14px; font-size: 13px; font-family: var(--font-body);
+    background: var(--bg1); border: 1px solid var(--border2); border-radius: var(--radius);
+    color: var(--text); outline: none;
+  }
+  .add-row input:focus { border-color: var(--accent); }
+  .add-btn {
+    padding: 10px 18px; font-family: var(--font-display); font-size: 16px; letter-spacing: 1px;
+    background: var(--accent); color: #080810; border: none; border-radius: var(--radius); cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .add-btn:hover:not(:disabled) { opacity: 0.88; }
+  .add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left; padding: 8px 12px; font-size: 10px; color: var(--text3);
+    border-bottom: 1px solid var(--border); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .data-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 13px; }
+  .data-table tbody tr:hover td { background: var(--bg1); }
+  .data-table .mono { font-family: var(--font-mono); font-size: 12px; }
+
+  .tag { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 600; letter-spacing: 0.04em; }
+  .tag-green  { background: #00ff8812; color: #00ff88; border: 1px solid #00ff8822; }
+  .tag-amber  { background: #ffbb0012; color: #ffbb00; border: 1px solid #ffbb0022; }
+  .tag-purple { background: var(--purple)18; color: #a78bfa; border: 1px solid var(--purple)33; }
+  .tag-red    { background: #ff4d6a12; color: var(--red); border: 1px solid #ff4d6a22; }
+
+  .welcome-banner {
+    background: var(--bg1); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.5rem; margin-bottom: 1.75rem; position: relative; overflow: hidden;
+  }
+  .welcome-banner::after {
+    content: '💪'; position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%);
+    font-size: 48px; opacity: 0.08;
+  }
+  .welcome-banner h3 { font-family: var(--font-display); font-size: 22px; letter-spacing: 2px; color: var(--text); margin-bottom: 4px; }
+  .welcome-banner p { font-size: 13px; color: var(--text2); }
+  .welcome-banner p span { color: var(--accent); font-family: var(--font-mono); }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid var(--border2); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ AUTH ═══════════ -->
+<div id="authScreen">
+  <div class="auth-bg"></div>
+  <div class="auth-grid"></div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark">💪</div>
+      <div>
+        <div class="auth-logo-text">PROGRAMA FITNESS</div>
+        <div class="auth-logo-sub">Área exclusiva do aluno</div>
+      </div>
+    </div>
+    <div class="auth-headline">ACESSE<br><span>SEU TREINO</span></div>
+    <div class="auth-sub">Insira o e-mail utilizado na compra para entrar na plataforma.</div>
+    <label class="field-label">E-mail de compra</label>
+    <input class="field-input" type="email" id="emailInput" placeholder="seuemail@exemplo.com" autocomplete="email" />
+    <div class="auth-error" id="authError">E-mail não encontrado. Verifique se usou o e-mail da compra.</div>
+    <button class="auth-btn" id="loginBtn" onclick="doLogin()">ENTRAR</button>
+    <p class="auth-note">Ainda não é aluno? Acesse nossa página de vendas.</p>
+  </div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="mainApp">
+  <div class="topbar">
+    <div class="topbar-logo">PROGRAMA <span>FITNESS</span></div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="avatar" id="avatarLetter">U</div>
+        <span class="user-email" id="userEmailDisplay">user@email.com</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <nav class="sidebar">
+      <div class="nav-section">Início</div>
+      <div class="nav-item active" data-page="modules" onclick="navTo('modules',this)">
+        <span class="nav-icon">⊞</span> Todos os módulos
+      </div>
+
+      <div class="nav-section">Módulos</div>
+      <div class="nav-item" data-page="intro"   onclick="navTo('intro',this)"><span class="nav-icon">📋</span> Introdução</div>
+      <div class="nav-item" data-page="warmup"  onclick="navTo('warmup',this)"><span class="nav-icon">🔥</span> Aquecimento</div>
+      <div class="nav-item" data-page="home"    onclick="navTo('home',this)"><span class="nav-icon">🏠</span> Treino em Casa</div>
+      <div class="nav-item" data-page="pilates" onclick="navTo('pilates',this)"><span class="nav-icon">🧘</span> Pilates</div>
+      <div class="nav-item" data-page="cardio"  onclick="navTo('cardio',this)"><span class="nav-icon">🏃</span> Cardio</div>
+      <div class="nav-item" data-page="gym"     onclick="navTo('gym',this)"><span class="nav-icon">💪</span> Treinos Academia</div>
+      <div class="nav-item" data-page="plan"    onclick="navTo('plan',this)"><span class="nav-icon">📅</span> Planejamento</div>
+      <div class="nav-item" data-page="supp"    onclick="navTo('supp',this)"><span class="nav-icon">💊</span> Suplementação</div>
+      <div class="nav-item" data-page="food"    onclick="navTo('food',this)"><span class="nav-icon">🥗</span> Alimentação</div>
+
+      <div class="nav-section">Bônus</div>
+      <div class="nav-item" data-page="detox"  onclick="navTo('detox',this)">
+        <span class="nav-icon">🥤</span> Sucos Detox <span class="nav-bonus">BÔNUS</span>
+      </div>
+      <div class="nav-item" data-page="shakes" onclick="navTo('shakes',this)">
+        <span class="nav-icon">🥛</span> Shakes <span class="nav-bonus">BÔNUS</span>
+      </div>
+
+      <div class="nav-section" id="adminSection" style="display:none">Admin</div>
+      <div class="nav-item" id="adminNav" data-page="admin" onclick="navTo('admin',this)" style="display:none">
+        <span class="nav-icon">⚙</span> Painel Admin
+      </div>
+    </nav>
+
+    <main class="content">
+
+      <!-- MÓDULOS OVERVIEW -->
+      <div class="page active" id="page-modules">
+        <div class="welcome-banner">
+          <h3>BEM-VINDO DE VOLTA</h3>
+          <p>Você está logado como <span id="welcomeEmail"></span></p>
+        </div>
+        <div class="page-title">MÓDULOS <span>DO</span><br>PROGRAMA</div>
+        <div class="page-sub">Selecione um módulo para acessar os materiais em PDF</div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-num">11</div><div class="stat-lbl">Módulos</div></div>
+          <div class="stat-box"><div class="stat-num">2</div><div class="stat-lbl">Bônus</div></div>
+          <div class="stat-box"><div class="stat-num">∞</div><div class="stat-lbl">Acesso</div></div>
+        </div>
+        <div class="modules-grid">
+          <div class="mod-card" onclick="navTo('intro',null)"><span class="mod-emoji">📋</span><div class="mod-name">INTRODUÇÃO</div><div class="mod-desc">Comece por aqui</div><div class="mod-count">2 arquivos PDF</div></div>
+          <div class="mod-card" onclick="navTo('warmup',null)"><span class="mod-emoji">🔥</span><div class="mod-name">AQUECIMENTO</div><div class="mod-desc">Prepare seu corpo</div><div class="mod-count">1 arquivo PDF</div></div>
+          <div class="mod-card" onclick="navTo('home',null)"><span class="mod-emoji">🏠</span><div class="mod-name">TREINO EM CASA</div><div class="mod-desc">Sem equipamentos</div><div class="mod-count">8 arquivos PDF</div></div>
+          <div class="mod-card" onclick="navTo('pilates',null)"><span class="mod-emoji">🧘</span><div class="mod-name">PILATES</div><div class="mod-desc">Força e flexibilidade</div><div class="mod-count">1 arquivo PDF</div></div>
+          <div class="mod-card" onclick="navTo('cardio',null)"><span class="mod-emoji">🏃</span><div class="mod-name">CARDIO</div><div class="mod-desc">Queima de gordura</div><div class="mod-count">1 arquivo PDF</div></div>
+          <div class="mod-card" onclick="navTo('gym',null)"><span class="mod-emoji">💪</span><div class="mod-name">ACADEMIA</div><div class="mod-desc">Hipertrofia e força</div><div class="mod-count">9 arquivos PDF</div></div>
+          <div class="mod-card" onclick="navTo('plan',null)"><span class="mod-emoji">📅</span><div class="mod-name">PLANEJAMENTO</div><div class="mod-desc">Monte sua rotina</div><div class="mod-count">3 arquivos PDF</div></div>
+          <div class="mod-card" onclick="navTo('supp',null)"><span class="mod-emoji">💊</span><div class="mod-name">SUPLEMENTAÇÃO</div><div class="mod-desc">Guia completo</div><div class="mod-count">2 arquivos PDF</div></div>
+          <div class="mod-card" onclick="navTo('food',null)"><span class="mod-emoji">🥗</span><div class="mod-name">ALIMENTAÇÃO</div><div class="mod-desc">Nutrição para treino</div><div class="mod-count">3 arquivos PDF</div></div>
+          <div class="mod-card bonus" onclick="navTo('detox',null)"><span class="mod-emoji">🥤</span><div class="mod-name">SUCOS DETOX</div><div class="mod-desc">Receitas exclusivas</div><span class="mod-bonus-tag">BÔNUS</span></div>
+          <div class="mod-card bonus" onclick="navTo('shakes',null)"><span class="mod-emoji">🥛</span><div class="mod-name">SHAKES</div><div class="mod-desc">Proteicos e naturais</div><span class="mod-bonus-tag">BÔNUS</span></div>
+        </div>
+      </div>
+
+      <!-- PAGES (geradas por JS) -->
+      <div class="page" id="page-intro"></div>
+      <div class="page" id="page-warmup"></div>
+      <div class="page" id="page-home"></div>
+      <div class="page" id="page-pilates"></div>
+      <div class="page" id="page-cardio"></div>
+      <div class="page" id="page-gym"></div>
+      <div class="page" id="page-plan"></div>
+      <div class="page" id="page-supp"></div>
+      <div class="page" id="page-food"></div>
+      <div class="page" id="page-detox"></div>
+      <div class="page" id="page-shakes"></div>
+
+      <!-- ADMIN -->
+      <div class="page" id="page-admin">
+        <div class="page-title">PAINEL <span>ADMIN</span></div>
+        <div class="page-sub">Gerencie os e-mails com acesso à plataforma</div>
+        <div class="hotmart-bar">
+          <div class="hotmart-dot"></div>
+          <div class="hotmart-txt"><strong>Webhook Hotmart ativo</strong> — compradores são adicionados automaticamente após a confirmação de pagamento</div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-num" id="totalCount">—</div><div class="stat-lbl">Alunos ativos</div></div>
+          <div class="stat-box"><div class="stat-num" id="todayCount">—</div><div class="stat-lbl">Hoje</div></div>
+          <div class="stat-box"><div class="stat-num" id="hotmartCount">—</div><div class="stat-lbl">Via Hotmart</div></div>
+        </div>
+        <p style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Adicionar e-mail manualmente</p>
+        <div class="add-row">
+          <input type="email" id="newEmail" placeholder="novo@email.com" onkeydown="if(event.key==='Enter')addEmail()" />
+          <button class="add-btn" id="addBtn" onclick="addEmail()">ADICIONAR</button>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>E-mail</th><th>Origem</th><th>Status</th><th>Data</th><th></th></tr></thead>
+          <tbody id="emailTable">
+            <tr><td colspan="5" class="empty-state"><span class="spinner"></span> Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://ijvedpvkdvwrercnlcth.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqdmVkcHZrZHZ3cmVyY25sY3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTEyOTQsImV4cCI6MjA5NTY4NzI5NH0.cRQmESefZCdo13pBDeNhhV6Yvqi4A7f8vUkI5eg-SMU';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const ADMINS = ['covalsqui.arrabal1@gmail.com'];
+let currentUser = null;
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const MODULES = {
+  intro:  { title:'INTRODUÇÃO',       emoji:'📋', desc:'Materiais de orientação inicial',     files:[
+    { nome:'Acessórios Treino em Casa',      path:'INTRODUCAO/ACESSORIOS TREINO EM CASA.pdf' },
+    { nome:'Estrutura de Treinos em Casa',   path:'INTRODUCAO/ESTRUTURA DE TREINOS EM CASA.pdf' }
+  ]},
+  warmup: { title:'AQUECIMENTO',      emoji:'🔥', desc:'Protocolos de aquecimento',           files:[
+    { nome:'Treino de Aquecimento Corporal', path:'AQUECIMENTO/1.1-TREINO DE AQUECIMENTO CORPORAL.pdf' }
+  ]},
+  home:   { title:'TREINO EM CASA',   emoji:'🏠', desc:'Treinos sem equipamentos',             files:[
+    { nome:'Objetivo Peito',                 path:'TREINO EM CASA/1-OBJETIVO-PEITO - TREINO EM CASA_compressed.pdf' },
+    { nome:'Full Body',                      path:'TREINO EM CASA/1-PRONTO-FULL BODY -TREINO EM CASA.pdf' },
+    { nome:'Objetivo Pernas',                path:'TREINO EM CASA/2-OBJETIVO-PERNAS - TREINO EM CASA.pdf' },
+    { nome:'Acabar com Celulite',            path:'TREINO EM CASA/2-PRONTO-ACABAR COM CELULITE - TREINO EM CASA.pdf' },
+    { nome:'Objetivo Abdômen',               path:'TREINO EM CASA/3-OBJETIVO-ABDOMEN - TREINO EM CASA_compressed.pdf' },
+    { nome:'Feminino',                       path:'TREINO EM CASA/3-PRONTO-FEMININO - TREINO EM CASA.pdf' },
+    { nome:'Objetivo Glúteos',               path:'TREINO EM CASA/4-OBJETIVO-GLUTEOS - TREINO EM CASA.pdf' },
+    { nome:'Objetivo Postura',               path:'TREINO EM CASA/5-OBJETIVO-POSTURA - TREINO EM CASA.pdf' }
+  ]},
+  pilates:{ title:'PILATES',          emoji:'🧘', desc:'Flexibilidade, postura e força',       files:[
+    { nome:'Pilates — Treino em Casa',       path:'PILATES/PILATES - TREINO EM CASA.pdf' }
+  ]},
+  cardio: { title:'CARDIO',           emoji:'🏃', desc:'Protocolos para queima de gordura',    files:[
+    { nome:'Cardio Fit — Treino em Casa',    path:'CARDIO/CARDIO FIT - TREINO EM CASA.pdf' }
+  ]},
+  gym:    { title:'TREINOS ACADEMIA', emoji:'💪', desc:'Hipertrofia, força e performance',     files:[
+    { nome:'Estrutura de Treinos Academia',  path:'TREINOS ACADEMIA/1.1-ESTRUTURA DE TREINOS EM ACADEMIA.pdf' },
+    { nome:'Exercícios Peito',               path:'TREINOS ACADEMIA/1-ACADEMIA EXERCICIOS PEITO.pdf' },
+    { nome:'Exercícios Bíceps',              path:'TREINOS ACADEMIA/2-ACADEMIA EXERCICIOS BICEPS.pdf' },
+    { nome:'Exercícios Abdômen',             path:'TREINOS ACADEMIA/3-ACADEMIA EXERCICIOS ABDOMEN.pdf' },
+    { nome:'Exercícios Costas',              path:'TREINOS ACADEMIA/4-ACADEMIA EXERCICIOS COSTAS.pdf' },
+    { nome:'Exercícios Tríceps',             path:'TREINOS ACADEMIA/5-ACADEMIA EXERCICIOS TRICEPS.pdf' },
+    { nome:'Exercícios Pernas',              path:'TREINOS ACADEMIA/6-ACADEMIA EXERCICIOS PERNAS.pdf' },
+    { nome:'Exercícios Panturrilha',         path:'TREINOS ACADEMIA/7-ACADEMIA EXERCICIOS PANTURRILHA.pdf' },
+    { nome:'Exercícios Glúteos',             path:'TREINOS ACADEMIA/8-ACADEMIA EXERCICIOS GLUTEOS.pdf' }
+  ]},
+  plan:   { title:'PLANEJAMENTO',     emoji:'📅', desc:'Organize sua rotina de treinos',       files:[
+    { nome:'Check List',                     path:'PLANEJAMENTO E CONTROLE/MATERIAL APOIO-CHECK LIST.pdf' },
+    { nome:'Controle e Monitoramento',       path:'PLANEJAMENTO E CONTROLE/MATERIAL APOIO-CONTROLE E MONITORAMENTO.pdf' },
+    { nome:'Planner Fitness',                path:'PLANEJAMENTO E CONTROLE/MATERIAL APOIO-PLANNER FITNESS.pdf' }
+  ]},
+  supp:   { title:'SUPLEMENTAÇÃO',    emoji:'💊', desc:'Guia completo de suplementos',         files:[
+    { nome:'Liberando Resultados Supremos',  path:'SUPLEMENTACAO/LIBERANDO RESULTADOS SUPREMOS.pdf' },
+    { nome:'Guia de Suplementação',          path:'SUPLEMENTACAO/MATERIAL APOIO-SUPLEMENTACAO.pdf' }
+  ]},
+  food:   { title:'ALIMENTAÇÃO',      emoji:'🥗', desc:'Nutrição estratégica para resultados', files:[
+    { nome:'Lista de Alimentos — Calorias por 100g', path:'ALIMENTOS/LISTA DE ALIMENTOS CALORIAS POR 100 GRAMAS.pdf' },
+    { nome:'Lista de Alimentos por 100g',    path:'ALIMENTOS/LISTA DE ALIMENTOS POR 100 GRAMAS.pdf' },
+    { nome:'Receitas — Alimentação Prática e Saudável', path:'ALIMENTOS/RECEITAS ALIMENTACAO PRATICA E SAUDAVEL.pdf' }
+  ]},
+  detox:  { title:'SUCOS DETOX',      emoji:'🥤', desc:'Bônus exclusivo — Receitas detox',     bonus:true, files:[
+    { nome:'Receitas de Sucos Detox',        path:'BONUS-SUCOS-DETOX/RECEITAS SUCOS DETOX.pdf' }
+  ]},
+  shakes: { title:'SHAKES',           emoji:'🥛', desc:'Bônus exclusivo — Shakes proteicos',   bonus:true, files:[
+    { nome:'Receitas Shakes Calóricos',      path:'BONUS-SHAKES/RECEITAS SHAKES CALORICOS.pdf' }
+  ]}
+};
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const val = document.getElementById('emailInput').value.trim().toLowerCase();
+  if (!val) return;
+
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('authError');
+  const inp = document.getElementById('emailInput');
+
+  btn.innerHTML = '<span class="spinner"></span>VERIFICANDO';
+  btn.disabled = true;
+  err.classList.remove('show');
+
+  const { data, error } = await db
+    .from('alunos')
+    .select('email, ativo')
+    .eq('email', val)
+    .eq('ativo', true)
+    .maybeSingle();
+
+  btn.innerHTML = 'ENTRAR';
+  btn.disabled = false;
+
+  if (data) {
+    currentUser = val;
+    document.getElementById('authScreen').style.display = 'none';
+    const app = document.getElementById('mainApp');
+    app.classList.add('visible');
+    document.getElementById('avatarLetter').textContent = val[0].toUpperCase();
+    document.getElementById('userEmailDisplay').textContent = val;
+    document.getElementById('welcomeEmail').textContent = val;
+    if (ADMINS.includes(val)) {
+      document.getElementById('adminNav').style.display = 'flex';
+      document.getElementById('adminSection').style.display = 'block';
+    }
+  } else {
+    inp.classList.add('error');
+    err.classList.add('show');
+    setTimeout(() => inp.classList.remove('error'), 2500);
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('mainApp').classList.remove('visible');
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('emailInput').value = '';
+  document.getElementById('adminNav').style.display = 'none';
+  document.getElementById('adminSection').style.display = 'none';
+  navTo('modules', document.querySelector('[data-page="modules"]'));
+}
+
+document.getElementById('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+function navTo(id, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const target = navEl || document.querySelector('[data-page="' + id + '"]');
+  if (target) target.classList.add('active');
+  if (id !== 'modules' && id !== 'admin') renderModule(id);
+  if (id === 'admin') loadAdminData();
+}
+
+// ─── MODULE RENDERER ─────────────────────────────────────────────────────────
+async function renderModule(id) {
+  const m = MODULES[id];
+  if (!m) return;
+  const el = document.getElementById('page-' + id);
+
+  el.innerHTML = `
+    <button class="back-btn" onclick="navTo('modules',null)">← Voltar aos módulos</button>
+    <div class="page-title">${m.emoji} ${m.title}</div>
+    <div class="page-sub">${m.desc} · ${m.files.length} arquivo${m.files.length > 1 ? 's' : ''} disponíve${m.files.length > 1 ? 'is' : 'l'}</div>
+    ${m.bonus ? '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent)12;border:1px solid var(--accent)33;color:var(--accent);font-size:11px;padding:5px 12px;border-radius:20px;margin-bottom:1.25rem;font-weight:600;letter-spacing:0.06em">🎁 CONTEÚDO BÔNUS EXCLUSIVO</div>' : ''}
+    ${m.files.map((f, i) => `
+      <div class="pdf-row" id="pdf-row-${id}-${i}">
+        <div class="pdf-icon-wrap">📄</div>
+        <div class="pdf-meta">
+          <div class="pdf-name">${f.nome}</div>
+          <div class="pdf-size">PDF · <span class="spinner" style="width:10px;height:10px;border-width:1.5px"></span> gerando link...</div>
+        </div>
+        <div class="pdf-btns">
+          <button class="icon-btn" id="btn-view-${id}-${i}" title="Visualizar" disabled>👁</button>
+          <button class="icon-btn" id="btn-dl-${id}-${i}"   title="Download"   disabled>⬇</button>
+        </div>
+      </div>
+    `).join('')}
+  `;
+
+  // Gera signed URLs para cada arquivo (válidas por 1 hora)
+  for (let i = 0; i < m.files.length; i++) {
+    const f = m.files[i];
+    const { data, error } = await db.storage.from('pdfs').createSignedUrl(f.path, 3600);
+
+    const row  = document.getElementById(`pdf-row-${id}-${i}`);
+    const meta = row.querySelector('.pdf-size');
+    const btnView = document.getElementById(`btn-view-${id}-${i}`);
+    const btnDl   = document.getElementById(`btn-dl-${id}-${i}`);
+
+    if (data?.signedUrl) {
+      meta.textContent = 'PDF · ' + m.title;
+      btnView.disabled = false;
+      btnView.onclick  = () => window.open(data.signedUrl, '_blank');
+      btnDl.disabled   = false;
+      btnDl.onclick    = () => {
+        const a = document.createElement('a');
+        a.href = data.signedUrl;
+        a.download = f.nome + '.pdf';
+        a.click();
+      };
+    } else {
+      meta.textContent = 'Erro ao carregar link';
+    }
+  }
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+async function loadAdminData() {
+  const tbody = document.getElementById('emailTable');
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><span class="spinner"></span> Carregando...</td></tr>';
+
+  const { data, error } = await db
+    .from('alunos')
+    .select('*')
+    .order('criado_em', { ascending: false });
+
+  if (error || !data) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar dados.</td></tr>';
+    return;
+  }
+
+  const today = new Date().toDateString();
+  let todayN = 0, hotmartN = 0;
+
+  tbody.innerHTML = data.map(s => {
+    const date = new Date(s.criado_em);
+    if (date.toDateString() === today) todayN++;
+    if (s.origem === 'hotmart') hotmartN++;
+    const fmt = date.toLocaleDateString('pt-BR');
+    const originTag = s.origem === 'hotmart'
+      ? '<span class="tag tag-amber">Hotmart</span>'
+      : s.origem === 'admin'
+      ? '<span class="tag tag-purple">Admin</span>'
+      : '<span class="tag tag-purple">Manual</span>';
+    const statusTag = s.ativo
+      ? '<span class="tag tag-green">Ativo</span>'
+      : '<span class="tag tag-red">Inativo</span>';
+    const isAdmin = ADMINS.includes(s.email);
+    return `<tr>
+      <td class="mono">${s.email}</td>
+      <td>${isAdmin ? '<span class="tag tag-purple">Admin</span>' : originTag}</td>
+      <td>${statusTag}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${fmt}</td>
+      <td>${isAdmin ? '' : `<button class="icon-btn" onclick="removeStudent('${s.id}', this)" title="Remover">✕</button>`}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="empty-state">Nenhum aluno cadastrado.</td></tr>';
+
+  document.getElementById('totalCount').textContent = data.filter(s => s.active).length;
+  document.getElementById('todayCount').textContent = todayN;
+  document.getElementById('hotmartCount').textContent = hotmartN;
+}
+
+async function addEmail() {
+  const input = document.getElementById('newEmail');
+  const btn   = document.getElementById('addBtn');
+  const email = input.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) return;
+
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  const { error } = await db
+    .from('alunos')
+    .insert({ email, origem: 'manual', ativo: true });
+
+  btn.disabled = false;
+  btn.textContent = 'ADICIONAR';
+
+  if (!error) {
+    input.value = '';
+    loadAdminData();
+  } else {
+    alert(error.code === '23505' ? 'E-mail já cadastrado.' : 'Erro: ' + error.message);
+  }
+}
+
+async function removeStudent(id, btn) {
+  btn.disabled = true;
+  const { error } = await db.from('alunos').delete().eq('id', id);
+  if (!error) loadAdminData();
+  else { btn.disabled = false; alert('Erro ao remover.'); }
+}
+</script>
+</body>
+</html>
