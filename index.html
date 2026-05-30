@@ -288,6 +288,82 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .empty-state { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
+
+  /* ─── MOBILE MENU TOGGLE ─────────────────────── */
+  .menu-toggle {
+    display: none; background: none; border: 1px solid var(--border2);
+    border-radius: 8px; color: var(--text2); width: 34px; height: 34px;
+    font-size: 18px; cursor: pointer; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; background: #00000088; z-index: 40;
+  }
+  .sidebar-overlay.show { display: block; }
+
+  /* ─── RESPONSIVE ─────────────────────────────── */
+  @media (max-width: 768px) {
+
+    /* Topbar */
+    .topbar { padding: 0 1rem; gap: 8px; }
+    .topbar-logo { font-size: 18px; letter-spacing: 2px; }
+    .user-email { display: none; }
+    .menu-toggle { display: flex; }
+
+    /* Sidebar vira drawer lateral */
+    .sidebar {
+      position: fixed; top: 54px; left: -230px; height: calc(100vh - 54px);
+      z-index: 45; transition: left 0.25s ease; box-shadow: 4px 0 24px #00000066;
+    }
+    .sidebar.open { left: 0; }
+
+    /* Content ocupa tela toda */
+    .app-body { overflow: visible; }
+    .content { padding: 1.25rem 1rem; overflow-y: auto; }
+
+    /* Stats em coluna única no mobile */
+    .stats-row { grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .stat-num { font-size: 24px; }
+
+    /* Grid de módulos 2 colunas */
+    .modules-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .mod-card { padding: 1rem; }
+    .mod-emoji { font-size: 22px; margin-bottom: 6px; }
+    .mod-name { font-size: 13px; }
+
+    /* Título de página menor */
+    .page-title { font-size: 30px; }
+
+    /* PDF row adaptada */
+    .pdf-row { padding: 10px 12px; gap: 10px; }
+    .pdf-icon-wrap { width: 30px; height: 30px; font-size: 15px; }
+    .pdf-name { font-size: 12px; }
+
+    /* Admin table scroll horizontal */
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: 8px 8px; }
+    .data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Topbar chip menor */
+    .user-chip { padding: 5px 8px 5px 5px; }
+    .avatar { width: 22px; height: 22px; font-size: 10px; }
+
+    /* Welcome banner */
+    .welcome-banner { padding: 1rem; }
+    .welcome-banner::after { font-size: 36px; opacity: 0.06; }
+    .welcome-banner h3 { font-size: 18px; }
+
+    /* Add row no admin */
+    .add-row { flex-direction: column; }
+    .add-btn { width: 100%; }
+  }
+
+  @media (max-width: 400px) {
+    .modules-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-row { grid-template-columns: repeat(3,1fr); }
+    .stat-num { font-size: 20px; }
+    .page-title { font-size: 26px; }
+  }
 </style>
 </head>
 <body>
@@ -317,7 +393,10 @@
 <!-- ═══════════ APP ═══════════ -->
 <div id="mainApp">
   <div class="topbar">
-    <div class="topbar-logo">PROGRAMA <span>FITNESS</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-logo">PROGRAMA <span>FITNESS</span></div>
+    </div>
     <div class="topbar-right">
       <div class="user-chip">
         <div class="avatar" id="avatarLetter">U</div>
@@ -327,8 +406,9 @@
     </div>
   </div>
 
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
   <div class="app-body">
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
       <div class="nav-section">Início</div>
       <div class="nav-item active" data-page="modules" onclick="navTo('modules',this)">
         <span class="nav-icon">⊞</span> Todos os módulos
@@ -420,12 +500,14 @@
           <input type="email" id="newEmail" placeholder="novo@email.com" onkeydown="if(event.key==='Enter')addEmail()" />
           <button class="add-btn" id="addBtn" onclick="addEmail()">ADICIONAR</button>
         </div>
+        <div class="data-table-wrap">
         <table class="data-table">
           <thead><tr><th>E-mail</th><th>Origem</th><th>Status</th><th>Data</th><th></th></tr></thead>
           <tbody id="emailTable">
             <tr><td colspan="5" class="empty-state"><span class="spinner"></span> Carregando...</td></tr>
           </tbody>
         </table>
+        </div>
       </div>
 
     </main>
@@ -554,6 +636,20 @@ function doLogout() {
 
 document.getElementById('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
+// ─── SIDEBAR MOBILE ───────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const isOpen   = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('show', !isOpen);
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
 // ─── NAV ──────────────────────────────────────────────────────────────────────
 function navTo(id, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -563,6 +659,7 @@ function navTo(id, navEl) {
   if (target) target.classList.add('active');
   if (id !== 'modules' && id !== 'admin') renderModule(id);
   if (id === 'admin') loadAdminData();
+  closeSidebar();
 }
 
 // ─── MODULE RENDERER ─────────────────────────────────────────────────────────
