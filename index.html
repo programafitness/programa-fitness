@@ -806,23 +806,18 @@ document.getElementById('emailInput').addEventListener('keydown', e => { if (e.k
 
 // ─── PDF MODAL ────────────────────────────────────────────────────────────────
 function openPdfModal(url, nome) {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  // Google Docs Viewer — funciona em iOS, Android e Desktop
+  // Exibe o PDF completo com scroll e o usuário permanece no app
+  const viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
 
-  // Configura o botão de download (funciona em todos)
+  document.getElementById('pdfModalFrame').src = viewerUrl;
+  document.getElementById('pdfModalTitle').textContent = nome;
+
   document.getElementById('pdfModalDl').onclick = () => {
     const a = document.createElement('a');
     a.href = url; a.download = nome + '.pdf'; a.click();
   };
 
-  if (isIOS) {
-    // iOS: abre no visualizador nativo do Safari (suporta scroll completo)
-    window.open(url, '_blank');
-    return;
-  }
-
-  // Android / Desktop: modal interno
-  document.getElementById('pdfModalFrame').src = url;
-  document.getElementById('pdfModalTitle').textContent = nome;
   document.getElementById('pdfModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
