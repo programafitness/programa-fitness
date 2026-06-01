@@ -328,8 +328,8 @@
 
   /* ─── PDF MODAL ──────────────────────────────── */
   .pdf-modal {
-    display: none; position: fixed; inset: 0; z-index: 200;
-    flex-direction: column; background: #000;
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1000; flex-direction: column; background: #000;
   }
   .pdf-modal.open { display: flex; }
 
@@ -819,39 +819,21 @@ document.getElementById('emailInput').addEventListener('keydown', e => { if (e.k
 // ─── PDF MODAL ────────────────────────────────────────────────────────────────
 function openPdfModal(url, nome) {
   const viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
-
   document.getElementById('pdfModalFrame').src = viewerUrl;
   document.getElementById('pdfModalTitle').textContent = nome;
   document.getElementById('pdfModalDl').onclick = () => {
     const a = document.createElement('a');
-    a.href = url; a.target = '_blank'; a.download = nome + '.pdf'; a.click();
+    a.href = url; a.download = nome + '.pdf'; a.click();
   };
-
   document.getElementById('pdfModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Registra no histórico do navegador — seta ← do browser também fecha o modal
-  history.pushState({ pdfModal: true }, '');
 }
 
 function closePdfModal() {
   document.getElementById('pdfModal').classList.remove('open');
   document.getElementById('pdfModalFrame').src = '';
   document.body.style.overflow = '';
-  // Volta no histórico apenas se o estado for do modal
-  if (history.state && history.state.pdfModal) {
-    history.back();
-  }
 }
-
-// Seta ← do navegador (iOS/Android) fecha o modal
-window.addEventListener('popstate', (e) => {
-  if (document.getElementById('pdfModal').classList.contains('open')) {
-    document.getElementById('pdfModal').classList.remove('open');
-    document.getElementById('pdfModalFrame').src = '';
-    document.body.style.overflow = '';
-  }
-});
 
 // ─── SIDEBAR MOBILE ───────────────────────────────────────────────────────────
 function toggleSidebar() {
@@ -902,7 +884,7 @@ async function renderModule(id) {
           <div class="pdf-size" id="pdf-size-${id}-${i}">PDF · <span class="spinner" style="width:10px;height:10px;border-width:1.5px"></span></div>
         </div>
         <div class="pdf-btns">
-          <button class="icon-btn" id="btn-open-${id}-${i}" disabled>👁 ABRIR</button>
+          <button class="icon-btn" id="btn-open-${id}-${i}" disabled>👁 VER / BAIXAR</button>
         </div>
       </div>
     `).join('')}
