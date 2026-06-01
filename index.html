@@ -829,13 +829,29 @@ function openPdfModal(url, nome) {
 
   document.getElementById('pdfModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Registra no histórico do navegador — seta ← do browser também fecha o modal
+  history.pushState({ pdfModal: true }, '');
 }
 
 function closePdfModal() {
   document.getElementById('pdfModal').classList.remove('open');
   document.getElementById('pdfModalFrame').src = '';
   document.body.style.overflow = '';
+  // Volta no histórico apenas se o estado for do modal
+  if (history.state && history.state.pdfModal) {
+    history.back();
+  }
 }
+
+// Seta ← do navegador (iOS/Android) fecha o modal
+window.addEventListener('popstate', (e) => {
+  if (document.getElementById('pdfModal').classList.contains('open')) {
+    document.getElementById('pdfModal').classList.remove('open');
+    document.getElementById('pdfModalFrame').src = '';
+    document.body.style.overflow = '';
+  }
+});
 
 // ─── SIDEBAR MOBILE ───────────────────────────────────────────────────────────
 function toggleSidebar() {
@@ -886,7 +902,7 @@ async function renderModule(id) {
           <div class="pdf-size" id="pdf-size-${id}-${i}">PDF · <span class="spinner" style="width:10px;height:10px;border-width:1.5px"></span></div>
         </div>
         <div class="pdf-btns">
-          <button class="icon-btn" id="btn-open-${id}-${i}" disabled>▶ ABRIR</button>
+          <button class="icon-btn" id="btn-open-${id}-${i}" disabled>👁 ABRIR</button>
         </div>
       </div>
     `).join('')}
