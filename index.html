@@ -860,6 +860,10 @@ function navTo(id, navEl) {
   if (id !== 'modules' && id !== 'admin') renderModule(id);
   if (id === 'admin') loadAdminData();
   closeSidebar();
+  // Sempre rola para o topo ao navegar
+  const content = document.querySelector('.content');
+  if (content) content.scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 // ─── MODULE RENDERER ─────────────────────────────────────────────────────────
