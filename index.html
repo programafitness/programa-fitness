@@ -813,9 +813,8 @@ function doLogout() {
 document.getElementById('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 // ─── PDF MODAL ────────────────────────────────────────────────────────────────
-function openPdfModal(url, nome) {
-  // Google Docs Viewer — funciona em iOS, Android e Desktop
-  // Exibe o PDF completo com scroll e o usuário permanece no app
+function openPdfModal(url, nome, autoDownload = false) {
+  // Abre o modal com o PDF — sempre com botão ← VOLTAR visível
   const viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
 
   document.getElementById('pdfModalFrame').src = viewerUrl;
@@ -828,6 +827,14 @@ function openPdfModal(url, nome) {
 
   document.getElementById('pdfModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Se veio do botão download, dispara o download automaticamente também
+  if (autoDownload) {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = url; a.download = nome + '.pdf'; a.click();
+    }, 800);
+  }
 }
 
 function closePdfModal() {
@@ -905,14 +912,9 @@ async function renderModule(id) {
     if (data?.signedUrl) {
       meta.textContent = 'PDF · ' + m.title;
       btnView.disabled = false;
-      btnView.onclick  = () => openPdfModal(data.signedUrl, f.nome);
+      btnView.onclick  = () => openPdfModal(data.signedUrl, f.nome, false);
       btnDl.disabled   = false;
-      btnDl.onclick    = () => {
-        const a = document.createElement('a');
-        a.href = data.signedUrl;
-        a.download = f.nome + '.pdf';
-        a.click();
-      };
+      btnDl.onclick    = () => openPdfModal(data.signedUrl, f.nome, true);
     } else {
       meta.textContent = 'Erro ao carregar link';
     }
