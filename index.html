@@ -356,12 +356,14 @@
   .pdf-modal-close:active { transform: scale(0.95); }
   .pdf-modal-dl {
     display: flex; align-items: center; gap: 5px;
-    background: var(--bg2); color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 10px 14px; border-radius: 30px; font-size: 13px; font-weight: 700;
+    background: var(--accent); color: #080810;
+    border: none;
+    padding: 10px 16px; border-radius: 30px; font-size: 13px; font-weight: 800;
     cursor: pointer; flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(200,255,0,0.4);
     -webkit-tap-highlight-color: transparent;
   }
+  .pdf-modal-dl:active { transform: scale(0.95); }
   .pdf-modal-frame-wrap {
     position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
     overflow: auto; -webkit-overflow-scrolling: touch;
@@ -685,7 +687,7 @@
   <div class="pdf-modal-bar">
     <button class="pdf-modal-close" onclick="closePdfModal()">← VOLTAR</button>
     <div class="pdf-modal-title" id="pdfModalTitle"></div>
-    <button class="pdf-modal-dl" id="pdfModalDl">⬇ BAIXAR</button>
+    <button class="pdf-modal-dl" id="pdfModalDl">⬇ SALVAR</button>
   </div>
   <div class="pdf-modal-frame-wrap">
     <iframe id="pdfModalFrame" src=""></iframe>
@@ -813,28 +815,18 @@ function doLogout() {
 document.getElementById('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 // ─── PDF MODAL ────────────────────────────────────────────────────────────────
-function openPdfModal(url, nome, autoDownload = false) {
-  // Abre o modal com o PDF — sempre com botão ← VOLTAR visível
+function openPdfModal(url, nome) {
   const viewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
 
   document.getElementById('pdfModalFrame').src = viewerUrl;
   document.getElementById('pdfModalTitle').textContent = nome;
-
   document.getElementById('pdfModalDl').onclick = () => {
     const a = document.createElement('a');
-    a.href = url; a.download = nome + '.pdf'; a.click();
+    a.href = url; a.target = '_blank'; a.download = nome + '.pdf'; a.click();
   };
 
   document.getElementById('pdfModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Se veio do botão download, dispara o download automaticamente também
-  if (autoDownload) {
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = url; a.download = nome + '.pdf'; a.click();
-    }, 800);
-  }
 }
 
 function closePdfModal() {
@@ -912,9 +904,9 @@ async function renderModule(id) {
     if (data?.signedUrl) {
       meta.textContent = 'PDF · ' + m.title;
       btnView.disabled = false;
-      btnView.onclick  = () => openPdfModal(data.signedUrl, f.nome, false);
+      btnView.onclick  = () => openPdfModal(data.signedUrl, f.nome);
       btnDl.disabled   = false;
-      btnDl.onclick    = () => openPdfModal(data.signedUrl, f.nome, true);
+      btnDl.onclick    = () => openPdfModal(data.signedUrl, f.nome);
     } else {
       meta.textContent = 'Erro ao carregar link';
     }
