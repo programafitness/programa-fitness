@@ -1,0 +1,24 @@
+{
+  "name": "Programa Fitness",
+  "short_name": "Fitness",
+  "description": "Área exclusiva do aluno - Programa Fitness",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#080810",
+  "theme_color": "#080810",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://ijvedpvkdvwrercnlcth.supabase.co/storage/v1/object/public/images/icon-512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ijvedpvkdvwrercnlcth.supabase.co/storage/v1/object/public/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
