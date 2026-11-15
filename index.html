@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:ital,wght@0,800;0,900;1,900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/app.css?v=3">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -202,12 +202,18 @@
     <div class="pdf-title" id="pdfTitle"></div>
     <button class="btn btn-primary btn-sm" id="pdfDownload" type="button">Baixar</button>
   </div>
+  <div class="pdf-modes" role="group" aria-label="Modo de leitura">
+    <button class="mode-btn" id="modeNormal" type="button" aria-pressed="true">Modo normal</button>
+    <button class="mode-btn" id="modeLivro" type="button" aria-pressed="false">Modo livro</button>
+  </div>
+  <div class="pdf-notice" id="pdfNotice" role="status" hidden></div>
   <div class="pdf-frame-wrap">
     <div class="pdf-loading" id="pdfLoading"><span class="spinner"></span></div>
     <iframe id="pdfFrame" title="Material" src="about:blank"></iframe>
+    <div class="book-wrap" id="bookWrap" hidden></div>
   </div>
 </div>
 
-<script src="assets/js/app.js"></script>
+<script src="assets/js/app.js?v=3"></script>
 </body>
 </html>

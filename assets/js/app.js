@@ -554,6 +554,87 @@ async function signedUrl(path, opts) {
   return (error || !data || !data.signedUrl) ? null : data.signedUrl;
 }
 
+// Modo de leitura escolhido pelo aluno ('normal' ou 'livro'), lembrado neste aparelho
+const MODO_KEY = 'ti_modo_leitura';
+let currentUrl = null;
+let modoToken = 0;
+let livroScript = null;
+
+function modoSalvo() {
+  try { return localStorage.getItem(MODO_KEY) === 'livro' ? 'livro' : 'normal'; } catch (e) { return 'normal'; }
+}
+
+function carregarLivro() {
+  if (window.TILivro) return Promise.resolve();
+  if (livroScript) return livroScript;
+  livroScript = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'assets/js/livro.js?v=1';
+    s.onload = resolve;
+    s.onerror = () => { livroScript = null; reject(new Error('livro.js')); };
+    document.head.appendChild(s);
+  });
+  return livroScript;
+}
+
+// Os elementos do modo livro podem não existir se o navegador ainda guardar um index.html antigo:
+// nesse caso o material abre normalmente no modo normal.
+function avisoLeitura(texto) {
+  const n = $('pdfNotice');
+  if (!n) return;
+  n.textContent = texto || '';
+  n.hidden = !texto;
+}
+
+function marcarModo(modo) {
+  const a = $('modeNormal'), b = $('modeLivro');
+  if (a) a.setAttribute('aria-pressed', String(modo === 'normal'));
+  if (b) b.setAttribute('aria-pressed', String(modo === 'livro'));
+}
+
+function fecharLivro() {
+  if (window.TILivro) window.TILivro.fechar();
+  const w = $('bookWrap');
+  if (w) w.hidden = true;
+}
+
+// Mostra o material no modo pedido. Se o livro falhar, cai para o modo normal.
+async function aplicarModo(modo, salvar) {
+  if (!$('bookWrap')) modo = 'normal';
+  const token = ++modoToken;
+  if (salvar) { try { localStorage.setItem(MODO_KEY, modo); } catch (e) { /* sem armazenamento */ } }
+  avisoLeitura('');
+  marcarModo(modo);
+  const frame = $('pdfFrame');
+
+  if (modo === 'normal') {
+    fecharLivro();
+    frame.hidden = false;
+    $('pdfLoading').hidden = false;
+    frame.onload = () => { $('pdfLoading').hidden = true; };
+    frame.src = 'https://docs.google.com/viewer?url=' + encodeURIComponent(currentUrl) + '&embedded=true';
+    setTimeout(() => { $('pdfLoading').hidden = true; }, 8000);
+    return;
+  }
+
+  frame.onload = null;
+  frame.src = 'about:blank';
+  frame.hidden = true;
+  $('bookWrap').hidden = false;
+  $('pdfLoading').hidden = false;
+  try {
+    await carregarLivro();
+    if (token !== modoToken) return;
+    await window.TILivro.abrir($('bookWrap'), currentUrl);
+    if (token !== modoToken) { window.TILivro.fechar(); return; }
+    $('pdfLoading').hidden = true;
+  } catch (e) {
+    if (token !== modoToken) return;
+    await aplicarModo('normal', false);
+    avisoLeitura('O modo livro não está disponível agora. Abrimos no modo normal.');
+  }
+}
+
 async function openMaterial(x, btn) {
   setBusy(btn, true, 'Abrindo');
   const url = await signedUrl(x.arquivo);
@@ -561,25 +642,27 @@ async function openMaterial(x, btn) {
   if (!url) { alert('Não foi possível abrir este material agora. Tente novamente em instantes.'); return; }
 
   currentMaterial = x;
+  currentUrl = url;
   $('pdfTitle').textContent = x.titulo;
-  $('pdfLoading').hidden = false;
-  const frame = $('pdfFrame');
-  frame.onload = () => { $('pdfLoading').hidden = true; };
-  frame.src = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
-  setTimeout(() => { $('pdfLoading').hidden = true; }, 8000);
   $('pdfModal').classList.add('open');
   document.body.style.overflow = 'hidden';
   $('pdfClose').focus();
+  aplicarModo(modoSalvo(), false);
 }
 
 function closePdf() {
   const m = $('pdfModal');
   if (!m.classList.contains('open')) return;
+  modoToken++;
   m.classList.remove('open');
+  fecharLivro();
   $('pdfFrame').onload = null;
   $('pdfFrame').src = 'about:blank';
+  $('pdfFrame').hidden = false;
+  avisoLeitura('');
   document.body.style.overflow = '';
   currentMaterial = null;
+  currentUrl = null;
 }
 
 async function downloadMaterial(x, btn) {
@@ -868,6 +951,8 @@ function init() {
   });
   $('adminBtn').addEventListener('click', () => { location.hash = '#/admin'; });
   $('pdfClose').addEventListener('click', closePdf);
+  if ($('modeNormal')) $('modeNormal').addEventListener('click', () => { if (currentUrl) aplicarModo('normal', true); });
+  if ($('modeLivro')) $('modeLivro').addEventListener('click', () => { if (currentUrl) aplicarModo('livro', true); });
   $('pdfDownload').addEventListener('click', () => { if (currentMaterial) downloadMaterial(currentMaterial, $('pdfDownload')); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePdf(); });
   window.addEventListener('hashchange', route);

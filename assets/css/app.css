@@ -251,7 +251,29 @@ h1, h2, h3, p { margin: 0; }
 .pdf-modal.open { display: flex; }
 .pdf-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; padding-top: max(8px, env(safe-area-inset-top)); background: var(--surface); border-bottom: 1px solid var(--border); }
 .pdf-title { flex: 1; min-width: 0; text-align: center; font-weight: 800; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-modes { display: flex; justify-content: center; gap: 8px; padding: 8px 10px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.mode-btn { min-height: var(--tap); padding: 0 18px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-2); font-weight: 800; font-size: 14px; }
+.mode-btn[aria-pressed="true"] { background: var(--lime); border-color: var(--lime); color: var(--lime-ink); }
+.pdf-notice { padding: 8px 14px; font-size: 13px; text-align: center; color: var(--text); background: var(--petrol); border-bottom: 1px solid var(--border); }
 .pdf-frame-wrap { position: relative; flex: 1; background: #fff; }
+
+/* ---------- Modo livro ---------- */
+.book-wrap { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; background: radial-gradient(ellipse at 50% 35%, #0c2a3c 0%, var(--bg) 70%); }
+.book-stage { position: relative; flex: 1; min-height: 0; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.livro-pagina { position: relative; background: #fff; overflow: hidden; }
+.livro-pagina img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.livro-pagina:not(.pronta)::after { content: ''; position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; border: 3px solid #cfd8dc; border-top-color: #13B8C6; animation: spin .8s linear infinite; }
+.livro-pagina.erro::after { content: 'Página indisponível'; border: 0; animation: none; width: auto; height: auto; margin: 0; transform: translate(-50%, -50%); color: #777; font-size: 13px; }
+.book-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); }
+.book-controls .btn { flex: 1 1 0; }
+.book-info { order: -1; flex: 1 0 100%; text-align: center; font-weight: 800; font-size: 13px; color: var(--text-2); }
+@media (min-width: 640px) { .book-info { order: 0; flex: 2 1 0; } .book-controls .btn { flex: 0 0 auto; min-width: 120px; } }
+.book-loading { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; background: rgba(5, 13, 27, .9); color: var(--text-2); font-weight: 700; }
+.book-zoom { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; background: var(--bg); }
+.book-zoom-bar { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.book-zoom-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y pinch-zoom; }
+.book-zoom-imgs { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px; }
+.book-zoom-imgs img { width: min(1200px, 100%); height: auto; background: #fff; }
 .pdf-frame-wrap iframe { width: 100%; height: 100%; border: 0; }
 .pdf-loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); color: var(--text-2); }
 
