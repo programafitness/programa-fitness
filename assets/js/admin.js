@@ -330,11 +330,6 @@ function webhookUrl(p) {
   return `${SUPABASE_URL}/functions/v1/kiwify-webhook?produto=${encodeURIComponent(p.slug)}`;
 }
 
-function gerarToken() {
-  const b = crypto.getRandomValues(new Uint8Array(24));
-  return Array.from(b).map((x) => x.toString(16).padStart(2, '0')).join('');   // 48 caracteres
-}
-
 async function assinar(token, texto) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', enc.encode(token), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
@@ -367,50 +362,60 @@ async function openWebhook(p) {
     h('p', { class: 'muted' }, 'Cole este endereço no campo URL do webhook na Kiwify. Ele já identifica o produto.'),
     h('div', { class: 'copy-box' }, urlInput, cUrl));
 
-  // 2) token
-  const tokInput = h('input', { class: 'field-input', readonly: true, type: 'password', 'aria-label': 'Token do webhook', value: token || '' });
+  // 2) token: quem cria é a Kiwify (campo cinza na tela dela); aqui você só cola o mesmo token
   const msgTok = alertBox();
-  const bloco2 = h('div', { class: 'panel' }, h('h2', {}, '2. Token (chave de segurança)'));
+  const colar = h('input', { class: 'field-input', id: 'kwToken', autocomplete: 'off', spellcheck: 'false', placeholder: 'Cole aqui o token que aparece na Kiwify', 'aria-label': 'Token da Kiwify' });
+  const salvarTok = btn(token ? 'Salvar novo token' : 'Salvar token', 'btn-primary', () => salvarToken(p, colar, salvarTok, msgTok));
+  const bloco2 = h('div', { class: 'panel' }, h('h2', {}, '2. Token da Kiwify'));
   if (token) {
+    const tokInput = h('input', { class: 'field-input', readonly: true, type: 'password', 'aria-label': 'Token do webhook', value: token });
     const ver = btn('Mostrar', 'btn-ghost', () => { const o = tokInput.type === 'password'; tokInput.type = o ? 'text' : 'password'; ver.textContent = o ? 'Ocultar' : 'Mostrar'; });
-    const cTok = btn('Copiar', 'btn-outline', () => copiar(token, cTok));
-    bloco2.append(h('p', { class: 'muted' }, 'Cole este token no campo Token do webhook na Kiwify. Só você, como administrador, consegue ver.'),
-      h('div', { class: 'copy-box' }, tokInput, h('div', { class: 'row-actions' }, ver, cTok)),
-      h('div', { style: 'margin-top:10px' }, btn('Gerar novo token', 'btn-danger btn-sm', () => novoToken(p, true))), msgTok);
+    bloco2.append(h('p', { class: 'muted' }, 'Token salvo para este produto. Só você, como administrador, consegue ver.'),
+      h('div', { class: 'copy-box' }, tokInput, h('div', { class: 'row-actions' }, ver)),
+      h('p', { class: 'muted', style: 'margin-top:12px' }, 'Se a Kiwify mudou o token deste webhook, cole o novo aqui:'));
   } else {
     bloco2.append(h('p', { class: 'muted' }, p.slug === 'treino-inteligente'
-        ? 'Este produto usa o token que já está configurado no webhook atual da Kiwify. Para trocar por um token próprio e poder testar por aqui, gere um novo e atualize o webhook na Kiwify.'
-        : 'Gere o token deste produto e cole no campo Token ao criar o webhook na Kiwify.'),
-      h('div', { style: 'margin-top:10px' }, btn('Gerar token do produto', 'btn-primary', () => novoToken(p, false))), msgTok);
+      ? 'Este produto já funciona com o token do webhook que está ativo na Kiwify. Só cole um token aqui se quiser usar o botão Testar por esta tela; use o mesmo token que aparece ao editar esse webhook na Kiwify.'
+      : 'A Kiwify cria o token sozinha e mostra no campo Token (cinza, que não dá para editar) ao criar o webhook. Copie de lá e cole abaixo. Faça isso ANTES de testar na Kiwify.'));
   }
+  bloco2.append(h('div', { class: 'copy-box' }, colar, salvarTok), msgTok);
 
   // 3) como configurar
   const bloco3 = h('div', { class: 'panel' }, h('h2', {}, '3. Como configurar na Kiwify'),
     h('ol', { class: 'steps-list' },
-      h('li', {}, 'Na Kiwify, abra Apps e depois Webhooks, e crie um novo webhook.'),
-      h('li', {}, `Escolha o produto "${p.nome}" e cole o endereço e o token acima.`),
+      h('li', {}, 'Na Kiwify, abra Apps, depois Webhooks, e clique em Criar webhook.'),
+      h('li', {}, 'Em URL do Webhook, cole o endereço do passo 1.'),
+      h('li', {}, 'Copie o token que a Kiwify mostra no campo Token (cinza) e cole no passo 2 desta tela. Clique em Salvar token.'),
+      h('li', {}, `Em Produtos, escolha "${p.nome}". Não deixe "Todos que sou produtor", senão a compra de qualquer produto seu liberaria este.`),
       h('li', {}, 'Marque os gatilhos: Compra aprovada, Compra reembolsada e Chargeback.'),
-      h('li', {}, p.kiwify_product_id ? 'O código do produto na Kiwify já está cadastrado e será conferido a cada aviso.'
-        : 'Opcional: cadastre o código do produto na Kiwify (botão Editar do produto) para o sistema conferir a cada aviso.')));
+      h('li', {}, 'Só depois de salvar o token aqui, use Testar Webhook na Kiwify e então clique em Criar. Volte para esta tela e confira o passo 5.')));
+  if (!p.kiwify_product_id) {
+    bloco3.append(h('p', { class: 'muted', style: 'margin-top:10px' },
+      'Atenção: este produto ainda não tem o código da Kiwify cadastrado (botão Editar do produto). Com o código, o sistema também confere de qual produto veio cada aviso.'));
+  }
 
   // 4) teste
   const resultado = h('div', { class: 'result', hidden: true, role: 'status' });
   const testar = btn('Testar webhook', 'btn-primary', () => testar_(p, token, testar, resultado), { disabled: !token });
-  const bloco4 = h('div', { class: 'panel' }, h('h2', {}, '4. Testar'),
+  const bloco4 = h('div', { class: 'panel' }, h('h2', {}, '4. Testar daqui'),
     h('p', { class: 'muted' }, token
-      ? 'Envia um aviso de teste assinado com o token deste produto e confere se o servidor aceita. Não cria nem altera nenhum aluno.'
-      : 'Gere o token do produto (passo 2) para poder testar por aqui.'),
+      ? 'Envia um aviso de teste assinado com o token salvo aqui e confere se o servidor aceita. Não cria nem altera nenhum aluno. Quem confirma que a Kiwify usa este mesmo token é o Testar Webhook dela: o aviso dela aparece no passo 5.'
+      : 'Salve o token da Kiwify (passo 2) para poder testar por aqui.'),
     h('div', { style: 'margin-top:10px' }, testar), resultado);
 
   show(cab, bloco1, bloco2, bloco3, bloco4, await bloco5(p));
 }
 
-async function novoToken(p, troca) {
-  if (troca && !confirm('Gerar um novo token? O webhook na Kiwify deixará de funcionar até você colar o novo token lá.')) return;
-  const token = gerarToken();
+// Guarda o token que a Kiwify mostrou (só letras, números, "-", "_" e ".")
+async function salvarToken(p, campo, botao, msg) {
+  const token = campo.value.trim();
+  if (!token) return say(msg, 'Cole o token que aparece na Kiwify.');
+  if (!/^[A-Za-z0-9_.-]{8,128}$/.test(token)) return say(msg, 'O token deve ter de 8 a 128 caracteres, só com letras, números, "-", "_" ou ".". Confira se copiou o token inteiro, sem espaços.');
+  setBusy(botao, true, 'Salvando');
   const res = await db.from('produto_webhooks')
     .upsert({ produto_id: p.id, token, atualizado_em: new Date().toISOString() }, { onConflict: 'produto_id' });
-  if (res.error) return alert('Não foi possível salvar o token: ' + res.error.message);
+  setBusy(botao, false);
+  if (res.error) return say(msg, 'Não foi possível salvar o token: ' + res.error.message);
   openWebhook(p);
 }
 
@@ -428,7 +433,7 @@ async function testar_(p, token, botao, caixa) {
         ? `Funcionando. O servidor aceitou a assinatura e reconheceu o produto "${p.nome}". Nada foi alterado. Agora é só criar o webhook na Kiwify com este endereço e este token.`
         : 'O servidor respondeu, mas usou o token geral e não o do produto. Atualize a página e tente de novo.');
     } else if (r.status === 401) {
-      mostrar(false, 'A assinatura não confere. O token salvo aqui é diferente do que o servidor usa. Gere um novo token e teste de novo.');
+      mostrar(false, 'A assinatura não confere. O servidor está usando outro token para este produto. Cole de novo o token da Kiwify no passo 2 e teste outra vez.');
     } else if (r.status === 404) {
       mostrar(false, 'O servidor não encontrou este produto. Confira se o produto está salvo.');
     } else {
