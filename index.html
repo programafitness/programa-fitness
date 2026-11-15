@@ -488,11 +488,28 @@
       </div>
     </div>
     <div class="auth-headline">ACESSE<br><span>SEU TREINO</span></div>
-    <div class="auth-sub">Insira o e-mail utilizado na compra para entrar na plataforma.</div>
-    <label class="field-label">E-mail de compra</label>
-    <input class="field-input" type="email" id="emailInput" placeholder="seuemail@exemplo.com" autocomplete="email" />
-    <div class="auth-error" id="authError">E-mail não encontrado. Verifique se usou o e-mail da compra.</div>
-    <button class="auth-btn" id="loginBtn" onclick="doLogin()">ENTRAR</button>
+    <!-- Etapa 1: e-mail -->
+    <div id="authStepEmail">
+      <div class="auth-sub">Insira o e-mail utilizado na compra. Enviaremos um código de acesso para ele.</div>
+      <label class="field-label">E-mail de compra</label>
+      <input class="field-input" type="email" id="emailInput" placeholder="seuemail@exemplo.com" autocomplete="email" />
+      <button class="auth-btn" id="loginBtn" onclick="doLogin()">RECEBER CÓDIGO</button>
+    </div>
+
+    <!-- Etapa 2: código enviado por e-mail -->
+    <div id="authStepCode" style="display:none">
+      <div class="auth-sub">Enviamos um código para <strong id="codeEmailLabel"></strong>. Digite-o abaixo. Confira também a caixa de spam.</div>
+      <label class="field-label">Código de acesso</label>
+      <input class="field-input" type="text" id="codeInput" placeholder="00000000" inputmode="numeric" autocomplete="one-time-code" maxlength="10" style="letter-spacing:6px;text-align:center;font-size:20px" />
+      <button class="auth-btn" id="verifyBtn" onclick="doVerifyCode()">ENTRAR</button>
+      <p class="auth-note">
+        <a href="#" id="resendLink" onclick="resendCode();return false;" style="color:var(--accent)">Reenviar código</a>
+        &nbsp;·&nbsp;
+        <a href="#" onclick="backToEmail();return false;" style="color:var(--text2)">Usar outro e-mail</a>
+      </p>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
     <p class="auth-note">Ainda não é aluno? Acesse nossa página de vendas.</p>
   </div>
 </div>
@@ -778,58 +795,208 @@ const MODULES = {
 };
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
-async function doLogin() {
-  const val = document.getElementById('emailInput').value.trim().toLowerCase();
-  if (!val) return;
+// Login por código enviado ao e-mail (Supabase Auth). A proteção real dos dados
+// e dos PDFs fica nas políticas RLS do banco (ver supabase/seguranca-rls.sql).
+let pendingEmail = null;
+let resendTimer = null;
 
-  const btn = document.getElementById('loginBtn');
+const MSG = {
+  network: 'Sem conexão com o servidor. Verifique sua internet. Se estiver no Wi-Fi, tente pelos dados móveis ou troque o DNS para 8.8.8.8.',
+  notFound: 'E-mail não encontrado. Verifique se usou o e-mail da compra.',
+  rate: 'Muitas tentativas. Aguarde um minuto e tente novamente.',
+  badCode: 'Código inválido ou expirado. Confira o código ou peça um novo.',
+  noAccess: 'Seu acesso não está ativo. Fale com o suporte.',
+  generic: 'Não foi possível concluir. Tente novamente em instantes.'
+};
+
+function isNetworkError(error) {
+  if (!error) return false;
+  return error.name === 'AuthRetryableFetchError'
+    || error.status === 0
+    || error.status === undefined && /fetch|network|load failed/i.test(error.message || '');
+}
+
+function showAuthError(msg, inputId) {
   const err = document.getElementById('authError');
-  const inp = document.getElementById('emailInput');
-
-  btn.innerHTML = '<span class="spinner"></span>VERIFICANDO';
-  btn.disabled = true;
-  err.classList.remove('show');
-
-  const { data, error } = await db
-    .from('alunos')
-    .select('email, ativo')
-    .eq('email', val)
-    .eq('ativo', true)
-    .maybeSingle();
-
-  btn.innerHTML = 'ENTRAR';
-  btn.disabled = false;
-
-  if (data) {
-    currentUser = val;
-    document.getElementById('authScreen').style.display = 'none';
-    const app = document.getElementById('mainApp');
-    app.classList.add('visible');
-    document.getElementById('avatarLetter').textContent = val[0].toUpperCase();
-    document.getElementById('userEmailDisplay').textContent = val;
-    document.getElementById('welcomeEmail').textContent = val;
-    if (ADMINS.includes(val)) {
-      document.getElementById('adminNav').style.display = 'flex';
-      document.getElementById('adminSection').style.display = 'block';
-    }
-  } else {
+  err.textContent = msg;
+  err.classList.add('show');
+  if (inputId) {
+    const inp = document.getElementById(inputId);
     inp.classList.add('error');
-    err.classList.add('show');
     setTimeout(() => inp.classList.remove('error'), 2500);
   }
 }
 
-function doLogout() {
+function clearAuthError() {
+  document.getElementById('authError').classList.remove('show');
+}
+
+function setBtn(id, loading, label, loadingLabel) {
+  const btn = document.getElementById(id);
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="spinner"></span>' + loadingLabel : label;
+}
+
+function authErrorMessage(error) {
+  if (isNetworkError(error)) return MSG.network;
+  if (error && error.status === 429) return MSG.rate;
+  return MSG.generic;
+}
+
+// Etapa 1: confere o e-mail e envia o código
+async function doLogin() {
+  const val = document.getElementById('emailInput').value.trim().toLowerCase();
+  if (!val) return;
+  clearAuthError();
+  setBtn('loginBtn', true, 'RECEBER CÓDIGO', 'ENVIANDO');
+
+  try {
+    const check = await db.rpc('verificar_aluno', { p_email: val });
+    if (check.error) { showAuthError(authErrorMessage(check.error)); return; }
+    if (check.data !== true) { showAuthError(MSG.notFound, 'emailInput'); return; }
+
+    const { error } = await db.auth.signInWithOtp({ email: val, options: { shouldCreateUser: true } });
+    if (error) { showAuthError(authErrorMessage(error)); return; }
+
+    pendingEmail = val;
+    goToCodeStep();
+  } catch (e) {
+    showAuthError(MSG.network);
+  } finally {
+    setBtn('loginBtn', false, 'RECEBER CÓDIGO', '');
+  }
+}
+
+function goToCodeStep() {
+  document.getElementById('codeEmailLabel').textContent = pendingEmail;
+  document.getElementById('authStepEmail').style.display = 'none';
+  document.getElementById('authStepCode').style.display = 'block';
+  document.getElementById('codeInput').value = '';
+  document.getElementById('codeInput').focus();
+  startResendCooldown();
+}
+
+function backToEmail() {
+  clearAuthError();
+  clearInterval(resendTimer);
+  pendingEmail = null;
+  document.getElementById('authStepCode').style.display = 'none';
+  document.getElementById('authStepEmail').style.display = 'block';
+}
+
+function startResendCooldown() {
+  const link = document.getElementById('resendLink');
+  let left = 60;
+  link.style.pointerEvents = 'none';
+  link.style.opacity = '0.5';
+  link.textContent = 'Reenviar código (' + left + 's)';
+  clearInterval(resendTimer);
+  resendTimer = setInterval(() => {
+    left--;
+    if (left <= 0) {
+      clearInterval(resendTimer);
+      link.style.pointerEvents = '';
+      link.style.opacity = '';
+      link.textContent = 'Reenviar código';
+    } else {
+      link.textContent = 'Reenviar código (' + left + 's)';
+    }
+  }, 1000);
+}
+
+async function resendCode() {
+  if (!pendingEmail) return;
+  clearAuthError();
+  try {
+    const { error } = await db.auth.signInWithOtp({ email: pendingEmail, options: { shouldCreateUser: true } });
+    if (error) { showAuthError(authErrorMessage(error)); return; }
+    startResendCooldown();
+  } catch (e) {
+    showAuthError(MSG.network);
+  }
+}
+
+// Etapa 2: confirma o código e abre o app
+async function doVerifyCode() {
+  const token = document.getElementById('codeInput').value.replace(/\s/g, '');
+  if (!pendingEmail || token.length < 6) { showAuthError(MSG.badCode, 'codeInput'); return; }
+  clearAuthError();
+  setBtn('verifyBtn', true, 'ENTRAR', 'VERIFICANDO');
+
+  try {
+    const { data, error } = await db.auth.verifyOtp({ email: pendingEmail, token, type: 'email' });
+    if (error) {
+      const bad = !isNetworkError(error) && error.status !== 429;
+      showAuthError(bad ? MSG.badCode : authErrorMessage(error), bad ? 'codeInput' : null);
+      return;
+    }
+    const email = (data.user && data.user.email || pendingEmail).toLowerCase();
+    const ok = await enterApp(email);
+    if (!ok) {
+      await db.auth.signOut();
+      backToEmail();
+      showAuthError(MSG.noAccess);
+    }
+  } catch (e) {
+    showAuthError(MSG.network);
+  } finally {
+    setBtn('verifyBtn', false, 'ENTRAR', '');
+  }
+}
+
+// Confirma que o usuário logado é aluno ativo (a RLS só devolve a linha dele) e mostra o app
+async function enterApp(email) {
+  const { data, error } = await db
+    .from('alunos')
+    .select('email, ativo')
+    .eq('email', email)
+    .eq('ativo', true)
+    .maybeSingle();
+
+  if (error || !data) return false;
+
+  currentUser = email;
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('mainApp').classList.add('visible');
+  document.getElementById('avatarLetter').textContent = email[0].toUpperCase();
+  document.getElementById('userEmailDisplay').textContent = email;
+  document.getElementById('welcomeEmail').textContent = email;
+  if (ADMINS.includes(email)) {
+    document.getElementById('adminNav').style.display = 'flex';
+    document.getElementById('adminSection').style.display = 'block';
+  }
+  return true;
+}
+
+// Reabre a sessão salva neste aparelho, se houver
+async function restoreSession() {
+  try {
+    const { data } = await db.auth.getSession();
+    const email = data && data.session && data.session.user && data.session.user.email;
+    if (!email) return;
+    const ok = await enterApp(email.toLowerCase());
+    if (!ok) await db.auth.signOut();
+  } catch (e) { /* sem rede: permanece na tela de login */ }
+}
+
+async function doLogout() {
+  try { await db.auth.signOut(); } catch (e) { /* encerra localmente mesmo sem rede */ }
   currentUser = null;
+  pendingEmail = null;
   document.getElementById('mainApp').classList.remove('visible');
   document.getElementById('authScreen').style.display = 'flex';
   document.getElementById('emailInput').value = '';
+  document.getElementById('authStepCode').style.display = 'none';
+  document.getElementById('authStepEmail').style.display = 'block';
+  clearAuthError();
   document.getElementById('adminNav').style.display = 'none';
   document.getElementById('adminSection').style.display = 'none';
   navTo('modules', document.querySelector('[data-page="modules"]'));
 }
 
 document.getElementById('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') doVerifyCode(); });
+restoreSession();
 
 // ─── PDF MODAL ────────────────────────────────────────────────────────────────
 function openPdfModal(url, nome) {
