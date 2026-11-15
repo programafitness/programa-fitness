@@ -17,7 +17,8 @@ const ADMINS = ['covalsqui.arrabal1@gmail.com'];
 const MSG = {
   network:  'Sem conexão com o servidor. Verifique sua internet. Se estiver no Wi-Fi, tente pelos dados móveis ou troque o DNS para 8.8.8.8.',
   notFound: 'E-mail não encontrado. Verifique se usou o e-mail da compra.',
-  rate:     'Muitas tentativas. Aguarde um minuto e tente novamente.',
+  rate:     'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
+  invalidEmail: 'Digite um e-mail válido.',
   badCode:  'Código inválido ou expirado. Confira o código ou peça um novo.',
   noAccess: 'Seu acesso não está ativo. Fale com o suporte.',
   generic:  'Não foi possível concluir. Tente novamente em instantes.'
@@ -125,23 +126,47 @@ function showAuthError(msg, inputId) {
 }
 const clearAuthError = () => $('authError').classList.remove('show');
 
+// Login do aluno: só com o e-mail. A função "entrar" confere a compra e devolve a sessão.
+// Para administradores ela responde { codigo: true } e o acesso segue por código enviado ao e-mail.
 async function doLogin(ev) {
   ev.preventDefault();
   const email = $('emailInput').value.trim().toLowerCase();
   if (!email) return;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAuthError(MSG.invalidEmail, 'emailInput');
   clearAuthError();
   const btn = $('loginBtn');
-  setBusy(btn, true, 'Enviando');
+  setBusy(btn, true, 'Entrando');
   try {
-    const check = await db.rpc('verificar_aluno', { p_email: email });
-    if (check.error) return showAuthError(errorMessage(check.error));
-    if (check.data !== true) return showAuthError(MSG.notFound, 'emailInput');
+    const { data, error } = await db.functions.invoke('entrar', { body: { email } });
 
-    const { error } = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-    if (error) return showAuthError(errorMessage(error));
+    if (error) {
+      const status = error.context && error.context.status;
+      if (status === 404) return showAuthError(MSG.notFound, 'emailInput');
+      if (status === 429) return showAuthError(MSG.rate);
+      if (status === 400) return showAuthError(MSG.invalidEmail, 'emailInput');
+      if (status) return showAuthError(MSG.generic);
+      return showAuthError(MSG.network);
+    }
 
-    pendingEmail = email;
-    goToCodeStep();
+    if (data && data.codigo) {            // administrador: continua com código por e-mail
+      const otp = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+      if (otp.error) return showAuthError(errorMessage(otp.error));
+      pendingEmail = email;
+      return goToCodeStep();
+    }
+
+    if (data && data.ok && data.access_token && data.refresh_token) {
+      const ses = await db.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
+      if (ses.error) return showAuthError(errorMessage(ses.error));
+      const result = await enterApp((data.email || email).toLowerCase());
+      if (result === 'network') return showAuthError(MSG.network);
+      if (result !== 'ok') {
+        await db.auth.signOut();
+        return showAuthError(MSG.noAccess);
+      }
+      return;
+    }
+    showAuthError(MSG.generic);
   } catch (e) {
     showAuthError(MSG.network);
   } finally {

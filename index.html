@@ -40,19 +40,19 @@
 
       <!-- Etapa 1: e-mail -->
       <form id="authStepEmail" novalidate>
-        <p class="auth-text">Digite o e-mail que você usou na compra. Vamos enviar um código de acesso para ele.</p>
+        <p class="auth-text">Digite o e-mail que você usou na compra para entrar.</p>
         <label class="field">
           <span class="field-label">E-mail da compra</span>
           <input class="field-input" type="email" id="emailInput" placeholder="seuemail@exemplo.com" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required>
         </label>
         <div class="auth-actions">
-          <button class="btn btn-primary btn-block" id="loginBtn" type="submit">Receber código</button>
+          <button class="btn btn-primary btn-block" id="loginBtn" type="submit">Entrar</button>
         </div>
       </form>
 
       <!-- Etapa 2: código enviado por e-mail -->
       <form id="authStepCode" hidden novalidate>
-        <p class="auth-text">Enviamos um código para <strong id="codeEmailLabel"></strong>. Digite-o abaixo. Se não encontrar, confira a caixa de spam.</p>
+        <p class="auth-text">Por segurança, esta conta precisa de um código. Enviamos um código para <strong id="codeEmailLabel"></strong>. Digite-o abaixo e confira também a caixa de spam.</p>
         <label class="field">
           <span class="field-label">Código de acesso</span>
           <input class="field-input code-input" type="text" id="codeInput" placeholder="00000000" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required>
