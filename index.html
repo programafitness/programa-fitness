@@ -160,6 +160,9 @@
 
       <!-- Produtos -->
       <div id="paneProdutos" role="tabpanel" aria-labelledby="tabProdutos" hidden>
+        <!-- telas de módulos, materiais e webhook (montadas por assets/js/admin.js) -->
+        <div id="adminSub" hidden></div>
+        <div id="prodMain">
         <form class="panel" id="prodForm" novalidate>
           <h2 id="prodFormTitle">Novo produto</h2>
           <p class="muted">Produtos que o aluno ainda não comprou aparecem bloqueados na Home, com um botão que leva ao link de compra.</p>
@@ -184,6 +187,7 @@
           <div class="alert" id="prodMsg" role="status"></div>
         </form>
         <div class="list" id="prodList"></div>
+        </div>
       </div>
     </section>
   </main>

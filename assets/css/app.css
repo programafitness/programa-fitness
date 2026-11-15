@@ -286,6 +286,28 @@ h1, h2, h3, p { margin: 0; }
 .tag.amber { color: #ffd166; border-color: rgba(255, 209, 102, .4); }
 .tag.purple { color: #c4b5fd; border-color: rgba(196, 181, 253, .4); }
 .cover-preview { margin-top: 10px; width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); background: var(--petrol); }
+.cover-preview.tall { width: 90px; height: 160px; }
+
+/* ---------- Admin: módulos, materiais e webhook ---------- */
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sub-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 14px; }
+.sub-head h2 { font-family: var(--font-title); font-weight: 800; font-size: 20px; text-transform: uppercase; }
+.row.mod { grid-template-columns: 1fr; }
+@media (min-width: 720px) { .row.mod { grid-template-columns: 48px minmax(0, 2fr) auto auto; } .row.mat { grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) auto; } }
+.row .thumb.tall { width: 48px; height: 86px; }
+.mover { display: inline-flex; gap: 6px; }
+.btn-icon { min-width: var(--tap); padding: 0; }
+.copy-box { display: grid; gap: 8px; margin-top: 6px; }
+@media (min-width: 720px) { .copy-box { grid-template-columns: 1fr auto; } }
+.copy-box input { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.steps-list { margin: 10px 0 0; padding-left: 20px; color: var(--text-2); font-size: 14px; display: grid; gap: 6px; }
+.event { display: grid; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 14px; }
+@media (min-width: 720px) { .event { grid-template-columns: 150px 160px 1fr; } }
+.result { margin-top: 12px; padding: 12px 14px; border-radius: 10px; font-size: 14px; border: 1px solid var(--border); background: var(--bg); }
+.result.ok { border-color: rgba(128, 255, 0, .45); color: var(--lime); }
+.result.erro { border-color: rgba(255, 138, 152, .45); color: var(--danger); }
+.progress { height: 8px; border-radius: 99px; background: var(--border); overflow: hidden; margin-top: 8px; }
+.progress > i { display: block; height: 100%; width: 0; background: var(--lime); transition: width .2s; }
 
 /* ---------- Movimento reduzido ---------- */
 @media (prefers-reduced-motion: reduce) {

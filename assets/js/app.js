@@ -308,13 +308,38 @@ async function loadCatalogData() {
   S.acessos = new Set((a.data || []).filter((x) => x.ativo).map((x) => x.produto_id));
 }
 
+// Catálogo (módulos e materiais) de um produto: vem do banco; o arquivo assets/data/<slug>.json é só reserva
 async function getCatalog(slug) {
   if (S.catalogs[slug] !== undefined) return S.catalogs[slug];
-  try {
-    const r = await fetch(`assets/data/${encodeURIComponent(slug)}.json`, { cache: 'no-cache' });
-    S.catalogs[slug] = r.ok ? await r.json() : null;
-  } catch (e) { S.catalogs[slug] = null; }
-  return S.catalogs[slug];
+  const prod = S.produtos.find((x) => x.slug === slug);
+  let cat = null;
+  if (prod) {
+    try {
+      const { data, error } = await db.from('produto_modulos')
+        .select('slug, titulo, descricao, capa_url, ordem, boas_vindas, produto_materiais(titulo, descricao, grupo, arquivo, ordem, ativo)')
+        .eq('produto_id', prod.id).eq('ativo', true)
+        .order('ordem', { ascending: true });
+      if (!error && data && data.length) {
+        cat = {
+          produto: slug,
+          modulos: data.map((m) => ({
+            id: m.slug, titulo: m.titulo, descricao: m.descricao || '', capa: m.capa_url || '', boasVindas: !!m.boas_vindas,
+            materiais: (m.produto_materiais || []).filter((x) => x.ativo !== false)
+              .sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
+              .map((x) => ({ titulo: x.titulo, descricao: x.descricao || '', grupo: x.grupo || '', arquivo: x.arquivo }))
+          }))
+        };
+      }
+    } catch (e) { /* usa a reserva abaixo */ }
+  }
+  if (!cat) {
+    try {
+      const r = await fetch(`assets/data/${encodeURIComponent(slug)}.json`, { cache: 'no-cache' });
+      cat = r.ok ? await r.json() : null;
+    } catch (e) { cat = null; }
+  }
+  S.catalogs[slug] = cat;
+  return cat;
 }
 
 // ─── Navegação (hash) ────────────────────────────────────────────────────────
@@ -689,12 +714,16 @@ async function loadAdminProdutos() {
     const src = imgUrl(p.capa_url);
     const edit = h('button', { class: 'btn btn-ghost btn-sm', type: 'button' }, 'Editar');
     edit.addEventListener('click', () => startEditProduto(p));
+    const mods = h('button', { class: 'btn btn-outline btn-sm', type: 'button' }, 'Módulos');
+    mods.addEventListener('click', () => openAdminSub('openModulos', p));
+    const hook = h('button', { class: 'btn btn-ghost btn-sm', type: 'button' }, 'Webhook');
+    hook.addEventListener('click', () => openAdminSub('openWebhook', p));
     list.append(h('div', { class: 'row prod' },
       src ? h('img', { class: 'thumb', src, alt: '', loading: 'lazy', width: 56, height: 56 }) : h('div', { class: 'thumb' }),
       h('div', {}, h('strong', {}, p.nome), h('div', { class: 'muted' }, p.slug)),
       h('div', { class: 'muted mono' }, safeLink(p.link_compra) ? p.link_compra : 'Sem link de compra'),
       p.ativo ? h('span', { class: 'tag green' }, 'Visível') : h('span', { class: 'tag red' }, 'Oculto'),
-      edit));
+      h('div', { class: 'row-actions' }, mods, hook, edit)));
   });
 }
 
@@ -793,6 +822,39 @@ async function saveProduto(ev) {
     setBusy(btn, false);
   }
 }
+
+// ─── Telas de administração carregadas sob demanda (módulos, materiais, webhook) ──
+// O código fica em assets/js/admin.js e só é baixado quando o administrador abre uma delas.
+let adminScript = null;
+
+function loadAdminScript() {
+  if (window.TIAdmin) return Promise.resolve();
+  if (adminScript) return adminScript;
+  adminScript = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'assets/js/admin.js?v=1';
+    s.onload = resolve;
+    s.onerror = () => { adminScript = null; reject(new Error('admin.js')); };
+    document.head.appendChild(s);
+  });
+  return adminScript;
+}
+
+async function openAdminSub(fn, produto) {
+  try {
+    await loadAdminScript();
+    window.TIAdmin[fn](produto);
+  } catch (e) {
+    alert('Não foi possível abrir esta tela agora. Verifique sua conexão e tente novamente.');
+  }
+}
+
+// Peças que o admin.js reaproveita
+window.TI = {
+  db, S, h, $, clear, setBusy, safeLink, imgUrl, slugify, MSG, SUPABASE_URL,
+  reloadProdutos: async () => { await loadCatalogData(); await loadAdminProdutos(); },
+  invalidateCatalogs: () => { S.catalogs = {}; }
+};
 
 // ─── Inicialização ───────────────────────────────────────────────────────────
 function init() {
