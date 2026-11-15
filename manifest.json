@@ -1,21 +1,22 @@
 {
-  "name": "Programa Fitness",
-  "short_name": "Fitness",
-  "description": "Área exclusiva do aluno - Programa Fitness",
+  "name": "Treino Inteligente",
+  "short_name": "Treino",
+  "description": "Área exclusiva do aluno - Treino Inteligente",
   "start_url": ".",
+  "scope": ".",
   "display": "standalone",
-  "background_color": "#080810",
-  "theme_color": "#080810",
+  "background_color": "#050D1B",
+  "theme_color": "#050D1B",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://ijvedpvkdvwrercnlcth.supabase.co/storage/v1/object/public/images/icon-512.png",
+      "src": "assets/img/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://ijvedpvkdvwrercnlcth.supabase.co/storage/v1/object/public/images/icon-512.png",
+      "src": "assets/img/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

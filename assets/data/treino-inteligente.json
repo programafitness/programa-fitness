@@ -1,0 +1,299 @@
+{
+  "produto": "treino-inteligente",
+  "modulos": [
+    {
+      "id": "boas-vindas",
+      "titulo": "Boas-vindas",
+      "descricao": "Veja como usar a plataforma.",
+      "capa": "assets/img/modulos/boas-vindas.webp",
+      "materiais": [],
+      "boasVindas": true
+    },
+    {
+      "id": "aquecimento",
+      "titulo": "Aquecimento",
+      "descricao": "Prepare o corpo antes de começar o treino.",
+      "capa": "assets/img/modulos/aquecimento.webp",
+      "materiais": [
+        {
+          "titulo": "Treino de Aquecimento",
+          "descricao": "Aquecimento para fazer antes dos treinos.",
+          "arquivo": "treino-inteligente/aquecimento/treino-de-aquecimento.pdf"
+        }
+      ]
+    },
+    {
+      "id": "treino-academia",
+      "titulo": "Treinos em Academia",
+      "descricao": "Treinos por grupo muscular para fazer na academia.",
+      "capa": "assets/img/modulos/treino-academia.webp",
+      "materiais": [
+        {
+          "titulo": "Treino de Peito",
+          "descricao": "Treino de peito para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-peito-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Costas",
+          "descricao": "Treino de costas para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-costas-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Bíceps",
+          "descricao": "Treino de bíceps para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-biceps-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Tríceps",
+          "descricao": "Treino de tríceps para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-triceps-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Pernas",
+          "descricao": "Treino de pernas para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-pernas-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Glúteos",
+          "descricao": "Treino de glúteos para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-gluteos-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Panturrilhas",
+          "descricao": "Treino de panturrilhas para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-panturrilhas-academia.pdf"
+        },
+        {
+          "titulo": "Treino de Abdômen",
+          "descricao": "Treino de abdômen para a academia.",
+          "arquivo": "treino-inteligente/treino-academia/treino-de-abdomen-academia.pdf"
+        }
+      ]
+    },
+    {
+      "id": "treino-casa",
+      "titulo": "Treinos em Casa",
+      "descricao": "Treinos por grupo muscular para fazer em casa.",
+      "capa": "assets/img/modulos/treino-casa.webp",
+      "materiais": [
+        {
+          "titulo": "Treino de Peito",
+          "descricao": "Treino de peito para fazer em casa.",
+          "arquivo": "treino-inteligente/treino-casa/treino-de-peito-em-casa.pdf"
+        },
+        {
+          "titulo": "Treino de Pernas",
+          "descricao": "Treino de pernas para fazer em casa.",
+          "arquivo": "treino-inteligente/treino-casa/treino-de-pernas-em-casa.pdf"
+        },
+        {
+          "titulo": "Treino de Glúteos",
+          "descricao": "Treino de glúteos para fazer em casa.",
+          "arquivo": "treino-inteligente/treino-casa/treino-de-gluteos-em-casa.pdf"
+        },
+        {
+          "titulo": "Treino de Abdômen",
+          "descricao": "Treino de abdômen para fazer em casa.",
+          "arquivo": "treino-inteligente/treino-casa/treino-de-abdomen-em-casa.pdf"
+        }
+      ]
+    },
+    {
+      "id": "treinos-prontos",
+      "titulo": "Treinos Prontos",
+      "descricao": "Treinos completos, prontos para seguir.",
+      "capa": "assets/img/modulos/treinos-prontos.webp",
+      "materiais": [
+        {
+          "titulo": "Treino Pronto: Full Body",
+          "descricao": "Treino de corpo inteiro.",
+          "arquivo": "treino-inteligente/treinos-prontos/treino-pronto-fullbody.pdf"
+        },
+        {
+          "titulo": "Treino Pronto: Feminino",
+          "descricao": "Treino pronto com foco feminino.",
+          "arquivo": "treino-inteligente/treinos-prontos/treino-pronto-feminino.pdf"
+        },
+        {
+          "titulo": "Treino Pronto: Celulite",
+          "descricao": "Treino pronto com foco em celulite.",
+          "arquivo": "treino-inteligente/treinos-prontos/treino-pronto-celulite.pdf"
+        },
+        {
+          "titulo": "Treino Pronto: Postura",
+          "descricao": "Treino pronto com foco em postura.",
+          "arquivo": "treino-inteligente/treinos-prontos/treino-pronto-postura.pdf"
+        },
+        {
+          "titulo": "Treino Pronto: Cardio",
+          "descricao": "Treino pronto de cardio.",
+          "arquivo": "treino-inteligente/treinos-prontos/treino-pronto-cardio.pdf"
+        }
+      ]
+    },
+    {
+      "id": "mini-band",
+      "titulo": "Treinos com Mini Band",
+      "descricao": "Treinos usando a mini band.",
+      "capa": "assets/img/modulos/mini-band.webp",
+      "materiais": [
+        {
+          "titulo": "Treinos com Mini Band",
+          "descricao": "Treinos usando a mini band.",
+          "arquivo": "treino-inteligente/mini-band/treino-com-miniband.pdf"
+        }
+      ]
+    },
+    {
+      "id": "treinos-abc",
+      "titulo": "Treinos ABC",
+      "descricao": "Divisão de treino em três dias (A, B e C).",
+      "capa": "assets/img/modulos/treinos-abc.webp",
+      "materiais": [
+        {
+          "titulo": "Treinos ABC",
+          "descricao": "Divisão de treino em três dias.",
+          "arquivo": "treino-inteligente/treinos-abc/treino-abc.pdf"
+        }
+      ]
+    },
+    {
+      "id": "treinos-abcd",
+      "titulo": "Treinos ABCD",
+      "descricao": "Divisão de treino em quatro dias (A, B, C e D).",
+      "capa": "assets/img/modulos/treinos-abcd.webp",
+      "materiais": [
+        {
+          "titulo": "Treinos ABCD",
+          "descricao": "Divisão de treino em quatro dias.",
+          "arquivo": "treino-inteligente/treinos-abcd/treinos-abcd.pdf"
+        }
+      ]
+    },
+    {
+      "id": "calistenia",
+      "titulo": "Treinos de Calistenia",
+      "descricao": "Treinos com o peso do próprio corpo.",
+      "capa": "assets/img/modulos/calistenia.webp",
+      "materiais": [
+        {
+          "titulo": "Treinos de Calistenia",
+          "descricao": "Treinos com o peso do próprio corpo.",
+          "arquivo": "treino-inteligente/calistenia/treinos-calistenia.pdf"
+        }
+      ]
+    },
+    {
+      "id": "pilates",
+      "titulo": "Treinos de Pilates",
+      "descricao": "Treinos de pilates para fazer em casa.",
+      "capa": "assets/img/modulos/pilates.webp",
+      "materiais": [
+        {
+          "titulo": "Treinos de Pilates",
+          "descricao": "Treinos de pilates.",
+          "arquivo": "treino-inteligente/pilates/treino-de-pilates.pdf"
+        }
+      ]
+    },
+    {
+      "id": "cronogramas",
+      "titulo": "Cronogramas de Treinos",
+      "descricao": "Guias semanais para organizar sua rotina.",
+      "capa": "assets/img/modulos/cronogramas.webp",
+      "materiais": [
+        {
+          "titulo": "Guia semanal de academia: 3 treinos",
+          "descricao": "Cronograma semanal com 3 treinos.",
+          "arquivo": "treino-inteligente/cronogramas/guia-semanal-de-academia-3-treinos.pdf",
+          "grupo": "Academia"
+        },
+        {
+          "titulo": "Guia semanal de academia: 5 treinos",
+          "descricao": "Cronograma semanal com 5 treinos.",
+          "arquivo": "treino-inteligente/cronogramas/guia-semanal-de-academia-5-treinos.pdf",
+          "grupo": "Academia"
+        },
+        {
+          "titulo": "Guia semanal em casa: 3 treinos",
+          "descricao": "Cronograma semanal com 3 treinos.",
+          "arquivo": "treino-inteligente/cronogramas/guia-semanal-de-3-treinos-em-casa.pdf",
+          "grupo": "Em casa"
+        },
+        {
+          "titulo": "Guia semanal em casa: 5 treinos",
+          "descricao": "Cronograma semanal com 5 treinos.",
+          "arquivo": "treino-inteligente/cronogramas/guia-semanal-de-5-treinos-em-casa.pdf",
+          "grupo": "Em casa"
+        }
+      ]
+    },
+    {
+      "id": "controle",
+      "titulo": "Materiais de Controle",
+      "descricao": "Fichas para acompanhar sua evolução.",
+      "capa": "assets/img/modulos/controle.webp",
+      "materiais": [
+        {
+          "titulo": "Constância em ação: oito semanas de hábitos",
+          "descricao": "Acompanhamento de hábitos por oito semanas.",
+          "arquivo": "treino-inteligente/controle/constancia-em-acao-oito-semanas-de-habitos.pdf"
+        },
+        {
+          "titulo": "Acompanhamento de medidas em quatro semanas",
+          "descricao": "Registro de medidas ao longo de quatro semanas.",
+          "arquivo": "treino-inteligente/controle/acompanhamento-de-medidas-em-quatro-semanas.pdf"
+        },
+        {
+          "titulo": "Ficha semanal de equilíbrio fitness",
+          "descricao": "Ficha semanal de acompanhamento.",
+          "arquivo": "treino-inteligente/controle/ficha-semanal-de-equilibrio-fitness.pdf"
+        },
+        {
+          "titulo": "Ficha semanal de controle de suplementação",
+          "descricao": "Ficha semanal para registrar a suplementação.",
+          "arquivo": "treino-inteligente/controle/ficha-semanal-de-controle-de-suplementacao.pdf"
+        }
+      ]
+    },
+    {
+      "id": "acessorios",
+      "titulo": "Guia de Acessórios",
+      "descricao": "Acessórios para treinar e opções de substituição.",
+      "capa": "assets/img/modulos/acessorios.webp",
+      "materiais": [
+        {
+          "titulo": "Guia de acessórios e substituições",
+          "descricao": "Acessórios e opções de substituição.",
+          "arquivo": "treino-inteligente/acessorios/guia-de-acessorios-e-substituicoes.pdf"
+        }
+      ]
+    },
+    {
+      "id": "suplementacao",
+      "titulo": "Suplementação",
+      "descricao": "Material sobre suplementação.",
+      "capa": "assets/img/modulos/suplementacao.webp",
+      "materiais": [
+        {
+          "titulo": "Suplementação",
+          "descricao": "Material sobre suplementação.",
+          "arquivo": "treino-inteligente/suplementacao/suplementacao.pdf"
+        }
+      ]
+    },
+    {
+      "id": "receitas",
+      "titulo": "Guia de Receitas",
+      "descricao": "Receitas para apoiar força e recuperação.",
+      "capa": "assets/img/modulos/receitas.webp",
+      "materiais": [
+        {
+          "titulo": "Receitas para força e recuperação",
+          "descricao": "Receitas para apoiar o treino.",
+          "arquivo": "treino-inteligente/receitas/receitas-treinos.pdf"
+        }
+      ]
+    }
+  ]
+}

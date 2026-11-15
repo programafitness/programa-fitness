@@ -1,0 +1,6 @@
+# Materiais de trabalho: não vão para o site público
+ARQUIVOS SUPABASE TREINO INTELIGENTE/
+supabase/
+.vscode/
+node_modules/
+*.log
