@@ -316,6 +316,7 @@
   .tag { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 600; letter-spacing: 0.04em; }
   .tag-green  { background: #00ff8812; color: #00ff88; border: 1px solid #00ff8822; }
   .tag-amber  { background: #ffbb0012; color: #ffbb00; border: 1px solid #ffbb0022; }
+  .tag-blue   { background: #38bdf812; color: #38bdf8; border: 1px solid #38bdf822; }
   .tag-purple { background: var(--purple)18; color: #a78bfa; border: 1px solid var(--purple)33; }
   .tag-red    { background: #ff4d6a12; color: var(--red); border: 1px solid #ff4d6a22; }
 
@@ -695,7 +696,7 @@
         <div class="stats-row">
           <div class="stat-box"><div class="stat-num" id="totalCount">—</div><div class="stat-lbl">Alunos ativos</div></div>
           <div class="stat-box"><div class="stat-num" id="todayCount">—</div><div class="stat-lbl">Hoje</div></div>
-          <div class="stat-box"><div class="stat-num" id="hotmartCount">—</div><div class="stat-lbl">Via Hotmart</div></div>
+          <div class="stat-box"><div class="stat-num" id="hotmartCount">—</div><div class="stat-lbl">Via compra</div></div>
         </div>
         <p style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Adicionar e-mail manualmente</p>
         <div class="add-row">
@@ -1092,6 +1093,10 @@ async function renderModule(id) {
 }
 
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+}
+
 async function loadAdminData() {
   const tbody = document.getElementById('emailTable');
   tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><span class="spinner"></span> Carregando...</td></tr>';
@@ -1107,14 +1112,16 @@ async function loadAdminData() {
   }
 
   const today = new Date().toDateString();
-  let todayN = 0, hotmartN = 0;
+  let todayN = 0, compraN = 0;
 
   tbody.innerHTML = data.map(s => {
     const date = new Date(s.criado_em);
     if (date.toDateString() === today) todayN++;
-    if (s.origem === 'hotmart') hotmartN++;
+    if (s.origem === 'kiwify' || s.origem === 'hotmart') compraN++;
     const fmt = date.toLocaleDateString('pt-BR');
-    const originTag = s.origem === 'hotmart'
+    const originTag = s.origem === 'kiwify'
+      ? '<span class="tag tag-blue">Kiwify</span>'
+      : s.origem === 'hotmart'
       ? '<span class="tag tag-amber">Hotmart</span>'
       : s.origem === 'admin'
       ? '<span class="tag tag-purple">Admin</span>'
@@ -1124,7 +1131,7 @@ async function loadAdminData() {
       : '<span class="tag tag-red">Inativo</span>';
     const isAdmin = ADMINS.includes(s.email);
     return `<tr>
-      <td class="mono">${s.email}</td>
+      <td class="mono">${escapeHtml(s.email)}</td>
       <td>${isAdmin ? '<span class="tag tag-purple">Admin</span>' : originTag}</td>
       <td>${statusTag}</td>
       <td style="font-family:var(--font-mono);font-size:11px">${fmt}</td>
@@ -1132,9 +1139,9 @@ async function loadAdminData() {
     </tr>`;
   }).join('') || '<tr><td colspan="5" class="empty-state">Nenhum aluno cadastrado.</td></tr>';
 
-  document.getElementById('totalCount').textContent = data.filter(s => s.active).length;
+  document.getElementById('totalCount').textContent = data.filter(s => s.ativo).length;
   document.getElementById('todayCount').textContent = todayN;
-  document.getElementById('hotmartCount').textContent = hotmartN;
+  document.getElementById('hotmartCount').textContent = compraN;
 }
 
 async function addEmail() {
