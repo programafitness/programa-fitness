@@ -319,21 +319,21 @@ Deno.serve(async (req) => {
       }
 
       // E-mail de boas-vindas ao Treino Inteligente (uma única vez por pedido)
-      console.log("[EMAIL] Checando envio de e-mail. produto.slug:", produto.slug, "order:", orderId);
-      console.log("DEBUG: checando e-mail, produto.slug=", produto.slug);
       if (!erro && produto.slug === "treino-inteligente") {
-        console.log("DEBUG: produto é treino-inteligente, verificando se ja enviou");
+        // limit(1) em vez de maybeSingle(): com 2+ linhas o maybeSingle() dá erro e o envio era pulado sem log
         const jaEnviado = await supabase.from("emails_enviados")
-          .select("id").eq("order_id", orderId).eq("tipo", "boas-vindas").maybeSingle();
-        console.log("DEBUG: jaEnviado.error=", jaEnviado.error, "jaEnviado.data=", jaEnviado.data);
-        if (!jaEnviado.error && !jaEnviado.data) {
-          console.log("[EMAIL] Nao enviado ainda. Iniciando envio...");
-          console.log("DEBUG: enviando e-mail...");
+          .select("id").eq("order_id", orderId).eq("tipo", "boas-vindas").limit(1);
+        if (jaEnviado.error) {
+          // não derruba a liberação do acesso; só registra para investigar
+          console.error("[EMAIL] erro ao consultar emails_enviados", orderId, jaEnviado.error.message);
+        } else if (jaEnviado.data.length > 0) {
+          console.log("[EMAIL] boas-vindas ja enviado", orderId);
+        } else {
           const primeiroNome = String(body?.Customer?.first_name || body?.customer?.first_name || "").trim();
-          const emailParams = emailBoasVindas(email, primeiroNome);
-          const resultado = await enviarEmail(emailParams);
-          console.log("[EMAIL] enviarEmail() retornou:", resultado);
-          await supabase.from("emails_enviados").insert({
+          const resultado = await enviarEmail(emailBoasVindas(email, primeiroNome));
+          if (resultado.ok) console.log("[EMAIL] boas-vindas enviado", orderId, mask(email), resultado.id);
+          else console.error("[EMAIL] falha no envio do boas-vindas", orderId, resultado.error);
+          const reg = await supabase.from("emails_enviados").insert({
             order_id: orderId,
             email,
             produto_id: produto.id,
@@ -341,12 +341,7 @@ Deno.serve(async (req) => {
             resend_id: resultado.id || null,
             erro: resultado.ok ? null : resultado.error,
           });
-          console.log("DEBUG: resultado.ok=", resultado.ok, "resultado.id=", resultado.id, "resultado.error=", resultado.error);
-          if (!resultado.ok) {
-            console.warn("erro ao enviar e-mail de boas-vindas", orderId, resultado.error);
-          } else {
-            console.log("E-mail de boas-vindas enviado com sucesso!", resultado.id);
-          }
+          if (reg.error) console.error("[EMAIL] erro ao gravar emails_enviados", orderId, reg.error.message);
         }
       }
     } else {
