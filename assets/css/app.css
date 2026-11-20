@@ -335,3 +335,26 @@ h1, h2, h3, p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* ============================================================================
+   PRODUTOS COM APP EMBUTIDO E TELA DE LOGIN
+   ========================================================================== */
+
+/* Cards menores na home */
+.product-card { max-width: 320px; margin: 0 auto; }
+@media (min-width: 960px) { .products { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } }
+
+/* Produtos na tela de login */
+.auth-products { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.auth-products h3 { font-size: 15px; font-weight: 600; color: var(--text-2); margin: 0 0 16px; text-align: center; }
+.auth-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.auth-product { text-align: center; text-decoration: none; transition: opacity .2s; }
+.auth-product:hover { opacity: 0.8; }
+.auth-product-cover { aspect-ratio: 1/1; border-radius: var(--r-md); overflow: hidden; margin-bottom: 8px; border: 1px solid var(--border); background: var(--surface); }
+.auth-product-cover img { width: 100%; height: 100%; object-fit: cover; }
+.auth-product-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+/* App embutido (iframe) */
+.app-frame { width: 100%; height: calc(100vh - 180px); min-height: 600px; border-radius: var(--r-lg); overflow: hidden; background: var(--surface); border: 1px solid var(--border); margin-top: 20px; }
+.app-frame iframe { width: 100%; height: 100%; border: none; display: block; }

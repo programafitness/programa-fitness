@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Treino Inteligente</title>
-<meta name="description" content="Área exclusiva do aluno Treino Inteligente.">
+<meta name="description" content="Ãrea exclusiva do aluno Treino Inteligente.">
 <meta name="robots" content="noindex, nofollow">
 
-<!-- PWA / Ícone na tela inicial -->
+<!-- PWA / Ãcone na tela inicial -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#050D1B">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<!-- ═══════════ ACESSO ═══════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â• ACESSO â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="authScreen">
   <div class="auth-visual" aria-hidden="true">
     <img src="assets/img/modulos/boas-vindas.webp" alt="" width="720" height="1279" decoding="async">
@@ -34,13 +34,13 @@
   <main class="auth-panel">
     <div class="auth-card">
       <div class="brand auth-brand">TREINO <b>INTELIGENTE</b></div>
-      <div class="eyebrow">Área exclusiva do aluno</div>
+      <div class="eyebrow">Ãrea exclusiva do aluno</div>
 
       <h1 class="auth-title">Acesse <span>seu treino</span></h1>
 
       <!-- Etapa 1: e-mail -->
       <form id="authStepEmail" novalidate>
-        <p class="auth-text">Digite o e-mail que você usou na compra para entrar.</p>
+        <p class="auth-text">Digite o e-mail que vocÃª usou na compra para entrar.</p>
         <label class="field">
           <span class="field-label">E-mail da compra</span>
           <input class="field-input" type="email" id="emailInput" placeholder="seuemail@exemplo.com" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required>
@@ -50,30 +50,36 @@
         </div>
       </form>
 
-      <!-- Etapa 2: código enviado por e-mail -->
+      <!-- Etapa 2: cÃ³digo enviado por e-mail -->
       <form id="authStepCode" hidden novalidate>
-        <p class="auth-text">Por segurança, esta conta precisa de um código. Enviamos um código para <strong id="codeEmailLabel"></strong>. Digite-o abaixo e confira também a caixa de spam.</p>
+        <p class="auth-text">Por seguranÃ§a, esta conta precisa de um cÃ³digo. Enviamos um cÃ³digo para <strong id="codeEmailLabel"></strong>. Digite-o abaixo e confira tambÃ©m a caixa de spam.</p>
         <label class="field">
-          <span class="field-label">Código de acesso</span>
+          <span class="field-label">CÃ³digo de acesso</span>
           <input class="field-input code-input" type="text" id="codeInput" placeholder="00000000" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required>
         </label>
         <div class="auth-actions">
           <button class="btn btn-primary btn-block" id="verifyBtn" type="submit">Entrar</button>
         </div>
         <div class="auth-links">
-          <button class="link-btn" id="resendLink" type="button">Reenviar código</button>
+          <button class="link-btn" id="resendLink" type="button">Reenviar cÃ³digo</button>
           <button class="link-btn" id="changeEmailLink" type="button">Usar outro e-mail</button>
         </div>
       </form>
 
       <div class="alert" id="authError" role="alert" aria-live="polite"></div>
-      <p class="credit">Ainda não é aluno? Acesse nossa página de vendas.</p>
+
+      <!-- Produtos disponÃ­veis -->
+      <div class="auth-products" id="authProducts" hidden>
+        <h3>ConheÃ§a nossos produtos:</h3>
+        <div class="auth-products-grid"></div>
+      </div>
+      <p class="credit">Ainda nÃ£o Ã© aluno? Acesse nossa pÃ¡gina de vendas.</p>
       <p class="credit" style="margin-top:6px">Desenvolvido pela Inova Tech Digital</p>
     </div>
   </main>
 </div>
 
-<!-- ═══════════ APLICATIVO ═══════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â• APLICATIVO â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="mainApp">
   <header class="topbar">
     <div class="topbar-in">
@@ -92,32 +98,36 @@
     <section class="view" id="viewHome" aria-labelledby="homeTitle">
       <div class="page-head">
         <h1 class="page-title" id="homeTitle">Meus <span>produtos</span></h1>
-        <p class="page-sub">Escolha o produto que você quer acessar.</p>
+        <p class="page-sub">Escolha o produto que vocÃª quer acessar.</p>
       </div>
       <div class="products" id="productsGrid"></div>
     </section>
 
-    <!-- Produto: módulos -->
+    <!-- Produto: mÃ³dulos -->
     <section class="view" id="viewProduct" aria-labelledby="productTitle">
-      <a class="back" href="#/home">← Voltar para a Home</a>
+      <a class="back" href="#/home">â† Voltar para a Home</a>
       <div class="page-head">
         <h1 class="page-title" id="productTitle"></h1>
         <p class="page-sub" id="productSub"></p>
       </div>
       <div class="toolbar">
         <label class="search">
-          <span class="sr-only">Buscar módulos e materiais</span>
+          <span class="sr-only">Buscar mÃ³dulos e materiais</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input class="field-input" type="search" id="searchInput" placeholder="Buscar módulos e materiais" autocomplete="off">
+          <input class="field-input" type="search" id="searchInput" placeholder="Buscar mÃ³dulos e materiais" autocomplete="off">
         </label>
       </div>
       <div class="modules" id="modulesGrid"></div>
       <div id="searchResults" hidden></div>
+      <!-- App embutido -->
+      <div id="appFrame" class="app-frame" hidden>
+        <iframe id="appIframe" title="App" allow="accelerometer; gyroscope" allowfullscreen></iframe>
+      </div>
     </section>
 
-    <!-- Módulo: materiais -->
+    <!-- MÃ³dulo: materiais -->
     <section class="view" id="viewModule" aria-labelledby="moduleTitle">
-      <a class="back" id="backToModules" href="#/home">← Voltar aos módulos</a>
+      <a class="back" id="backToModules" href="#/home">â† Voltar aos mÃ³dulos</a>
       <div class="module-head">
         <img id="moduleCover" src="" alt="" width="140" height="249">
         <div>
@@ -130,11 +140,11 @@
 
     <!-- Admin -->
     <section class="view" id="viewAdmin" aria-labelledby="adminTitle">
-      <a class="back" href="#/home">← Voltar para a Home</a>
+      <a class="back" href="#/home">â† Voltar para a Home</a>
       <div class="page-head">
         <h1 class="page-title" id="adminTitle">Painel <span>Admin</span></h1>
       </div>
-      <div class="tabs" role="tablist" aria-label="Seções do painel">
+      <div class="tabs" role="tablist" aria-label="SeÃ§Ãµes do painel">
         <button class="tab" role="tab" id="tabAlunos" aria-selected="true" aria-controls="paneAlunos" type="button">Alunos</button>
         <button class="tab" role="tab" id="tabProdutos" aria-selected="false" aria-controls="paneProdutos" type="button">Produtos</button>
       </div>
@@ -142,9 +152,9 @@
       <!-- Alunos -->
       <div id="paneAlunos" role="tabpanel" aria-labelledby="tabAlunos">
         <div class="stats">
-          <div class="stat"><b id="totalCount">—</b><span>Alunos ativos</span></div>
-          <div class="stat"><b id="todayCount">—</b><span>Hoje</span></div>
-          <div class="stat"><b id="compraCount">—</b><span>Via compra</span></div>
+          <div class="stat"><b id="totalCount">â€”</b><span>Alunos ativos</span></div>
+          <div class="stat"><b id="todayCount">â€”</b><span>Hoje</span></div>
+          <div class="stat"><b id="compraCount">â€”</b><span>Via compra</span></div>
         </div>
         <form class="panel" id="addForm" novalidate>
           <h2>Liberar acesso manualmente</h2>
@@ -160,29 +170,30 @@
 
       <!-- Produtos -->
       <div id="paneProdutos" role="tabpanel" aria-labelledby="tabProdutos" hidden>
-        <!-- telas de módulos, materiais e webhook (montadas por assets/js/admin.js) -->
+        <!-- telas de mÃ³dulos, materiais e webhook (montadas por assets/js/admin.js) -->
         <div id="adminSub" hidden></div>
         <div id="prodMain">
         <form class="panel" id="prodForm" novalidate>
           <h2 id="prodFormTitle">Novo produto</h2>
-          <p class="muted">Produtos que o aluno ainda não comprou aparecem bloqueados na Home, com um botão que leva ao link de compra.</p>
+          <p class="muted">Produtos que o aluno ainda nÃ£o comprou aparecem bloqueados na Home, com um botÃ£o que leva ao link de compra.</p>
           <div class="form-grid two">
             <label class="field"><span class="field-label">Nome do produto</span><input class="field-input" id="pNome" maxlength="80" required></label>
             <label class="field"><span class="field-label">Link de compra (Kiwify)</span><input class="field-input" id="pLink" type="url" inputmode="url" placeholder="https://pay.kiwify.com.br/..." autocomplete="off"></label>
-            <label class="field span-2"><span class="field-label">Descrição</span><textarea class="field-textarea" id="pDesc" maxlength="300"></textarea></label>
-            <label class="field"><span class="field-label">Código do produto na Kiwify</span><input class="field-input" id="pCodigo" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false"><span class="field-hint">Libera o acesso automático quando a compra é aprovada.</span></label>
+            <label class="field span-2"><span class="field-label">DescriÃ§Ã£o</span><textarea class="field-textarea" id="pDesc" maxlength="300"></textarea></label>
+            <label class="field"><span class="field-label">CÃ³digo do produto na Kiwify</span><input class="field-input" id="pCodigo" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false"><span class="field-hint">Libera o acesso automÃ¡tico quando a compra Ã© aprovada.</span></label>
+            <label class="field span-2"><span class="field-label">URL do App (opcional)</span><input class="field-input" id="pAppUrl" type="url" placeholder="https://..." autocomplete="off"><span class="field-hint">Se preenchido, o produto abrirá este app em iframe, sem mostrar módulos.</span></label>
             <label class="field"><span class="field-label">Ordem na Home</span><input class="field-input" id="pOrdem" type="number" min="0" step="1" value="10"></label>
             <div class="field span-2">
               <span class="field-label">Foto do produto</span>
               <input class="field-input" id="pFoto" type="file" accept="image/png,image/jpeg,image/webp">
-              <span class="field-hint">PNG, JPG ou WebP, até 3 MB. Ideal: imagem quadrada.</span>
+              <span class="field-hint">PNG, JPG ou WebP, atÃ© 3 MB. Ideal: imagem quadrada.</span>
               <img class="cover-preview" id="pPreview" alt="" hidden>
             </div>
-            <label class="check span-2"><input type="checkbox" id="pAtivo" checked> Produto visível para os alunos</label>
+            <label class="check span-2"><input type="checkbox" id="pAtivo" checked> Produto visÃ­vel para os alunos</label>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
             <button class="btn btn-primary" id="pSave" type="submit">Salvar produto</button>
-            <button class="btn btn-ghost" id="pCancel" type="button" hidden>Cancelar edição</button>
+            <button class="btn btn-ghost" id="pCancel" type="button" hidden>Cancelar ediÃ§Ã£o</button>
           </div>
           <div class="alert" id="prodMsg" role="status"></div>
         </form>
@@ -195,10 +206,10 @@
   <footer class="footer">Desenvolvido pela Inova Tech Digital</footer>
 </div>
 
-<!-- ═══════════ VISUALIZADOR DE MATERIAL ═══════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â• VISUALIZADOR DE MATERIAL â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="pdf-modal" id="pdfModal" role="dialog" aria-modal="true" aria-label="Visualizador de material">
   <div class="pdf-bar">
-    <button class="btn btn-ghost btn-sm" id="pdfClose" type="button">← Voltar</button>
+    <button class="btn btn-ghost btn-sm" id="pdfClose" type="button">â† Voltar</button>
     <div class="pdf-title" id="pdfTitle"></div>
     <button class="btn btn-primary btn-sm" id="pdfDownload" type="button">Baixar</button>
   </div>
