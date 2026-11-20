@@ -125,33 +125,6 @@ function showAuthError(msg, inputId) {
   }
 }
 const clearAuthError = () => $('authError').classList.remove('show');
-// Carrega produtos para mostrar na tela de login
-async function loadAuthProducts() {
-  try {
-    const { data } = await db.from('produtos').select('slug, nome, link_compra, capa_url').eq('ativo', true).order('ordem');
-    if (!data || !data.length) return;
-    
-    const grid = document.querySelector('.auth-products-grid');
-    if (!grid) return;
-    
-    clear(grid);
-    data.forEach((p) => {
-      const link = safeLink(p.link_compra);
-      if (!link) return;
-      
-      const card = h('a', { class: 'auth-product', href: link, target: '_blank', rel: 'noopener' },
-        h('div', { class: 'auth-product-cover' },
-          imgUrl(p.capa_url) ? h('img', { src: imgUrl(p.capa_url), alt: p.nome, loading: 'lazy' }) : null),
-        h('div', { class: 'auth-product-name' }, p.nome));
-      grid.append(card);
-    });
-    
-    const authProducts = $('authProducts');
-    if (authProducts) authProducts.hidden = false;
-  } catch (e) {
-    // Falha silenciosa - produtos na tela de login são opcionais
-  }
-}
 
 // Login do aluno: só com o e-mail. A função "entrar" confere a compra e devolve a sessão.
 // Para administradores ela responde { codigo: true } e o acesso segue por código enviado ao e-mail.
@@ -1021,19 +994,15 @@ async function loadAuthProducts() {
       const link = safeLink(p.link_compra);
       const capa = imgUrl(p.capa_url);
       
-      if (link) {
-        const card = h('a', { class: 'auth-product', href: link, target: '_blank', rel: 'noopener' },
-          h('div', { class: 'auth-product-cover' },
-            capa ? h('img', { src: capa, alt: p.nome, loading: 'lazy' }) : h('div', { class: 'auth-product-placeholder' })),
-          h('div', { class: 'auth-product-name' }, p.nome));
-        grid.append(card);
-      } else {
-        const card = h('div', { class: 'auth-product auth-product-info' },
-          h('div', { class: 'auth-product-cover' },
-            capa ? h('img', { src: capa, alt: p.nome, loading: 'lazy' }) : h('div', { class: 'auth-product-placeholder' })),
-          h('div', { class: 'auth-product-name' }, p.nome));
-        grid.append(card);
-      }
+      const cover = h('div', { class: 'auth-product-cover' },
+        capa ? h('img', { src: capa, alt: p.nome, loading: 'lazy' }) : h('div', { class: 'auth-product-placeholder' }));
+      const body = h('div', { class: 'auth-product-body' },
+        h('div', { class: 'auth-product-name' }, p.nome),
+        h('span', { class: 'auth-product-cta' }, link ? 'Quero conhecer →' : 'Em breve'));
+
+      grid.append(link
+        ? h('a', { class: 'auth-product', href: link, target: '_blank', rel: 'noopener' }, cover, body)
+        : h('div', { class: 'auth-product auth-product-info' }, cover, body));
     });
     
     const authProducts = document.getElementById('authProducts');
@@ -1054,7 +1023,43 @@ function closeAppFrame() {
   if (location.hash === '#/home') route(); else location.hash = '#/home';
 }
 
+// ─── Instalar o app (PWA) ────────────────────────────────────────────────────
+// Chrome/Edge/Android mostram o pedido nativo; no iPhone mostramos o passo a passo.
+let installPrompt = null;
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+function updateInstallCard() {
+  $('installCard').hidden = isStandalone() || !(installPrompt || isIOS());
+}
+
+async function installApp() {
+  if (installPrompt) {
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    installPrompt = null;
+    updateInstallCard();
+    return;
+  }
+  $('installHelp').hidden = false;
+}
+
+function initInstall() {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    installPrompt = e;
+    updateInstallCard();
+  });
+  window.addEventListener('appinstalled', () => { installPrompt = null; updateInstallCard(); });
+  $('installBtn').addEventListener('click', installApp);
+  $('installHelpClose').addEventListener('click', () => { $('installHelp').hidden = true; });
+  $('installHelp').addEventListener('click', (e) => { if (e.target === $('installHelp')) $('installHelp').hidden = true; });
+  updateInstallCard();
+}
+
 function init() {
+  initInstall();
   $('authStepEmail').addEventListener('submit', doLogin);
   $('authStepCode').addEventListener('submit', doVerify);
   $('resendLink').addEventListener('click', resendCode);
