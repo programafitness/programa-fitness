@@ -1,30 +1,30 @@
-/* ============================================================================
+﻿/* ============================================================================
    TREINO INTELIGENTE - Plataforma do aluno
-   Login por código (Supabase Auth) -> Home com produtos -> módulos -> materiais.
-   A proteção real dos dados e dos arquivos fica nas regras (RLS) do Supabase.
+   Login por cÃƒÂ³digo (Supabase Auth) -> Home com produtos -> mÃƒÂ³dulos -> materiais.
+   A proteÃƒÂ§ÃƒÂ£o real dos dados e dos arquivos fica nas regras (RLS) do Supabase.
    ========================================================================== */
 (() => {
 'use strict';
 
-// ─── Supabase ────────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Supabase Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const SUPABASE_URL = 'https://ijvedpvkdvwrercnlcth.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqdmVkcHZrZHZ3cmVyY25sY3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTEyOTQsImV4cCI6MjA5NTY4NzI5NH0.cRQmESefZCdo13pBDeNhhV6Yvqi4A7f8vUkI5eg-SMU';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Só decide se o botão do painel aparece. Quem pode alterar dados é definido no banco (RLS).
+// SÃƒÂ³ decide se o botÃƒÂ£o do painel aparece. Quem pode alterar dados ÃƒÂ© definido no banco (RLS).
 const ADMINS = ['covalsqui.arrabal1@gmail.com'];
 
 const MSG = {
-  network:  'Sem conexão com o servidor. Verifique sua internet. Se estiver no Wi-Fi, tente pelos dados móveis ou troque o DNS para 8.8.8.8.',
-  notFound: 'E-mail não encontrado. Verifique se usou o e-mail da compra.',
+  network:  'Sem conexÃƒÂ£o com o servidor. Verifique sua internet. Se estiver no Wi-Fi, tente pelos dados mÃƒÂ³veis ou troque o DNS para 8.8.8.8.',
+  notFound: 'E-mail nÃƒÂ£o encontrado. Verifique se usou o e-mail da compra.',
   rate:     'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
-  invalidEmail: 'Digite um e-mail válido.',
-  badCode:  'Código inválido ou expirado. Confira o código ou peça um novo.',
-  noAccess: 'Seu acesso não está ativo. Fale com o suporte.',
-  generic:  'Não foi possível concluir. Tente novamente em instantes.'
+  invalidEmail: 'Digite um e-mail vÃƒÂ¡lido.',
+  badCode:  'CÃƒÂ³digo invÃƒÂ¡lido ou expirado. Confira o cÃƒÂ³digo ou peÃƒÂ§a um novo.',
+  noAccess: 'Seu acesso nÃƒÂ£o estÃƒÂ¡ ativo. Fale com o suporte.',
+  generic:  'NÃƒÂ£o foi possÃƒÂ­vel concluir. Tente novamente em instantes.'
 };
 
-// ─── Utilidades ──────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Utilidades Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const $ = (id) => document.getElementById(id);
 
 // Cria elementos sem usar innerHTML (todo texto vindo do banco entra como texto puro)
@@ -53,7 +53,7 @@ function slugify(s) {
   return norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'produto';
 }
 
-// Aceita só links http(s)
+// Aceita sÃƒÂ³ links http(s)
 function safeLink(u) {
   try {
     const x = new URL(String(u || '').trim());
@@ -61,7 +61,7 @@ function safeLink(u) {
   } catch { return null; }
 }
 
-// Imagens: caminho do próprio site (assets/...) ou link http(s)
+// Imagens: caminho do prÃƒÂ³prio site (assets/...) ou link http(s)
 function imgUrl(u) {
   const v = String(u || '').trim();
   if (/^assets\/[\w\-./]+$/.test(v) && !v.includes('..')) return v;
@@ -96,13 +96,13 @@ function errorMessage(error) {
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
-// ─── Estado ──────────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Estado Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const S = {
   email: null,
   isAdmin: false,
-  produtos: [],        // produtos visíveis ao aluno (o admin vê todos)
+  produtos: [],        // produtos visÃƒÂ­veis ao aluno (o admin vÃƒÂª todos)
   acessos: new Set(),  // ids dos produtos que o aluno comprou
-  catalogs: {},        // conteúdo (módulos e materiais) por produto
+  catalogs: {},        // conteÃƒÂºdo (mÃƒÂ³dulos e materiais) por produto
   adminProdutos: [],   // lista completa para o painel
   loadError: false,
   renderToken: 0
@@ -110,7 +110,7 @@ const S = {
 
 const isOwned = (p) => S.isAdmin || S.acessos.has(p.id);
 
-// ─── Acesso (login) ──────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Acesso (login) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 let pendingEmail = null;
 let resendTimer = null;
 
@@ -125,9 +125,36 @@ function showAuthError(msg, inputId) {
   }
 }
 const clearAuthError = () => $('authError').classList.remove('show');
+// Carrega produtos para mostrar na tela de login
+async function loadAuthProducts() {
+  try {
+    const { data } = await db.from('produtos').select('slug, nome, link_compra, capa_url').eq('ativo', true).order('ordem');
+    if (!data || !data.length) return;
+    
+    const grid = document.querySelector('.auth-products-grid');
+    if (!grid) return;
+    
+    clear(grid);
+    data.forEach((p) => {
+      const link = safeLink(p.link_compra);
+      if (!link) return;
+      
+      const card = h('a', { class: 'auth-product', href: link, target: '_blank', rel: 'noopener' },
+        h('div', { class: 'auth-product-cover' },
+          imgUrl(p.capa_url) ? h('img', { src: imgUrl(p.capa_url), alt: p.nome, loading: 'lazy' }) : null),
+        h('div', { class: 'auth-product-name' }, p.nome));
+      grid.append(card);
+    });
+    
+    const authProducts = $('authProducts');
+    if (authProducts) authProducts.hidden = false;
+  } catch (e) {
+    // Falha silenciosa - produtos na tela de login sÃƒÂ£o opcionais
+  }
+}
 
-// Login do aluno: só com o e-mail. A função "entrar" confere a compra e devolve a sessão.
-// Para administradores ela responde { codigo: true } e o acesso segue por código enviado ao e-mail.
+// Login do aluno: sÃƒÂ³ com o e-mail. A funÃƒÂ§ÃƒÂ£o "entrar" confere a compra e devolve a sessÃƒÂ£o.
+// Para administradores ela responde { codigo: true } e o acesso segue por cÃƒÂ³digo enviado ao e-mail.
 async function doLogin(ev) {
   ev.preventDefault();
   const email = $('emailInput').value.trim().toLowerCase();
@@ -148,7 +175,7 @@ async function doLogin(ev) {
       return showAuthError(MSG.network);
     }
 
-    if (data && data.codigo) {            // administrador: continua com código por e-mail
+    if (data && data.codigo) {            // administrador: continua com cÃƒÂ³digo por e-mail
       const otp = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
       if (otp.error) return showAuthError(errorMessage(otp.error));
       pendingEmail = email;
@@ -195,16 +222,16 @@ function startResendCooldown() {
   const link = $('resendLink');
   let left = 60;
   link.disabled = true;
-  link.textContent = `Reenviar código (${left}s)`;
+  link.textContent = `Reenviar cÃƒÂ³digo (${left}s)`;
   clearInterval(resendTimer);
   resendTimer = setInterval(() => {
     left--;
     if (left <= 0) {
       clearInterval(resendTimer);
       link.disabled = false;
-      link.textContent = 'Reenviar código';
+      link.textContent = 'Reenviar cÃƒÂ³digo';
     } else {
-      link.textContent = `Reenviar código (${left}s)`;
+      link.textContent = `Reenviar cÃƒÂ³digo (${left}s)`;
     }
   }, 1000);
 }
@@ -249,7 +276,7 @@ async function doVerify(ev) {
   }
 }
 
-// Confirma que o usuário logado é aluno ativo e abre o aplicativo
+// Confirma que o usuÃƒÂ¡rio logado ÃƒÂ© aluno ativo e abre o aplicativo
 async function enterApp(email) {
   const { data, error } = await db.from('alunos').select('email, ativo')
     .eq('email', email).eq('ativo', true).maybeSingle();
@@ -297,7 +324,7 @@ async function doLogout() {
   leaveApp();
 }
 
-// ─── Dados: produtos e acessos ───────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Dados: produtos e acessos Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 async function loadCatalogData() {
   const [p, a] = await Promise.all([
     db.from('produtos').select('*').order('ordem', { ascending: true }),
@@ -308,7 +335,7 @@ async function loadCatalogData() {
   S.acessos = new Set((a.data || []).filter((x) => x.ativo).map((x) => x.produto_id));
 }
 
-// Catálogo (módulos e materiais) de um produto: vem do banco; o arquivo assets/data/<slug>.json é só reserva
+// CatÃƒÂ¡logo (mÃƒÂ³dulos e materiais) de um produto: vem do banco; o arquivo assets/data/<slug>.json ÃƒÂ© sÃƒÂ³ reserva
 async function getCatalog(slug) {
   if (S.catalogs[slug] !== undefined) return S.catalogs[slug];
   const prod = S.produtos.find((x) => x.slug === slug);
@@ -342,7 +369,7 @@ async function getCatalog(slug) {
   return cat;
 }
 
-// ─── Navegação (hash) ────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ NavegaÃƒÂ§ÃƒÂ£o (hash) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function showView(id) {
   document.querySelectorAll('.view').forEach((v) => v.classList.toggle('active', v.id === id));
   window.scrollTo(0, 0);
@@ -374,19 +401,19 @@ async function route() {
   showView('viewHome');
 }
 
-// ─── Home: Meus produtos ─────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Home: Meus produtos Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function renderHome() {
   const grid = $('productsGrid');
   clear(grid);
 
   if (S.loadError) {
     grid.append(h('div', { class: 'empty', style: 'grid-column:1/-1' },
-      h('p', {}, 'Não foi possível carregar seus produtos.'),
+      h('p', {}, 'NÃƒÂ£o foi possÃƒÂ­vel carregar seus produtos.'),
       retryButton()));
     return;
   }
   if (!S.produtos.length) {
-    grid.append(h('div', { class: 'empty', style: 'grid-column:1/-1' }, 'Nenhum produto disponível no momento.'));
+    grid.append(h('div', { class: 'empty', style: 'grid-column:1/-1' }, 'Nenhum produto disponÃƒÂ­vel no momento.'));
     return;
   }
   // Liberados primeiro, bloqueados depois (a ordem de cadastro vale dentro de cada grupo)
@@ -409,7 +436,7 @@ function productCard(p) {
   const coverInner = [
     src ? h('img', { src, alt: `Capa do produto ${p.nome}`, width: 900, height: 900, loading: 'lazy', decoding: 'async' })
         : h('div', { class: 'noimg' }, p.nome),
-    h('span', { class: 'badge ' + (owned ? 'ok' : 'lock') }, owned ? 'Liberado' : '🔒 Bloqueado')
+    h('span', { class: 'badge ' + (owned ? 'ok' : 'lock') }, owned ? 'Liberado' : 'Ã°Å¸â€â€™ Bloqueado')
   ];
   const cover = href
     ? h('a', { class: 'product-cover', href, tabindex: '-1', 'aria-hidden': 'true',
@@ -429,7 +456,7 @@ function productCard(p) {
       action));
 }
 
-// ─── Produto: módulos ────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Produto: mÃƒÂ³dulos Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const moduleHref = (p, m) => `#/p/${encodeURIComponent(p.slug)}/${encodeURIComponent(m.id)}`;
 
 function moduleCard(p, m) {
@@ -437,7 +464,7 @@ function moduleCard(p, m) {
   const meta = m.boasVindas ? 'Comece por aqui' : `${n} ${n === 1 ? 'material' : 'materiais'}`;
   return h('a', { class: 'module-card', href: moduleHref(p, m) },
     h('div', { class: 'module-cover' },
-      h('img', { src: imgUrl(m.capa) || '', alt: `Capa do módulo ${m.titulo}`, width: 720, height: 1279, loading: 'lazy', decoding: 'async' })),
+      h('img', { src: imgUrl(m.capa) || '', alt: `Capa do mÃƒÂ³dulo ${m.titulo}`, width: 720, height: 1279, loading: 'lazy', decoding: 'async' })),
     h('div', { class: 'module-name' }, m.titulo),
     h('div', { class: 'module-meta' }, meta));
 }
@@ -452,9 +479,45 @@ function renderProduct(p, cat) {
   clear(grid); clear(results);
   results.hidden = true; grid.hidden = false;
 
+  // App fullscreen: se produto tem app_url, mostra iframe
+  const appFrame = document.getElementById('appFrame');
+  if (p.app_url) {
+    const appUrl = safeLink(p.app_url);
+    if (appUrl) {
+      const appIframe = document.getElementById('appIframe');
+      const appTitle = document.getElementById('appFrameTitle');
+      grid.hidden = true;
+      results.hidden = true;
+      input.disabled = true;
+      if (appFrame) appFrame.hidden = false;
+      if (appTitle) appTitle.textContent = p.nome;
+      if (appIframe) appIframe.src = appUrl;
+      return;
+    }
+  }
+
+  // Oculta app frame no modo normal
+  if (appFrame) appFrame.hidden = true;
+
+  // Se o produto tem app_url, mostra iframe em vez dos mÃ³dulos
+  if (p.app_url) {
+    const appUrl = safeLink(p.app_url);
+    if (appUrl) {
+      const appFrame = document.getElementById('appFrame');
+      const appIframe = document.getElementById('appIframe');
+      grid.hidden = true;
+      results.hidden = true;
+      input.disabled = true;
+      if (appFrame) appFrame.hidden = false;
+      if (appIframe) appIframe.src = appUrl;
+      return;
+    }
+  }
+
+
   if (!cat || !cat.modulos || !cat.modulos.length) {
     grid.hidden = true; results.hidden = false;
-    results.append(h('div', { class: 'empty' }, 'O conteúdo deste produto está sendo preparado.'));
+    results.append(h('div', { class: 'empty' }, 'O conteÃƒÂºdo deste produto estÃƒÂ¡ sendo preparado.'));
     input.disabled = true;
     return;
   }
@@ -478,11 +541,11 @@ function runSearch(p, cat, raw) {
 
   grid.hidden = true; box.hidden = false;
   if (!mods.length && !mats.length) {
-    box.append(h('div', { class: 'empty' }, `Nada encontrado para “${raw.trim()}”.`));
+    box.append(h('div', { class: 'empty' }, `Nada encontrado para Ã¢â‚¬Å“${raw.trim()}Ã¢â‚¬Â.`));
     return;
   }
   if (mods.length) {
-    box.append(h('h2', { class: 'group-title' }, 'Módulos'));
+    box.append(h('h2', { class: 'group-title' }, 'MÃƒÂ³dulos'));
     box.append(h('div', { class: 'modules' }, mods.map((m) => moduleCard(p, m))));
   }
   if (mats.length) {
@@ -491,11 +554,11 @@ function runSearch(p, cat, raw) {
   }
 }
 
-// ─── Módulo: materiais ───────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ MÃƒÂ³dulo: materiais Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const WELCOME_STEPS = [
-  ['Escolha um módulo', 'Na tela do produto, toque na capa do módulo que você quer treinar.'],
-  ['Abra o material', 'Toque em “Abrir material” para ver o treino na tela, sem sair da plataforma.'],
-  ['Baixe para guardar', 'Toque em “Baixar material” para salvar o arquivo no seu aparelho.']
+  ['Escolha um mÃƒÂ³dulo', 'Na tela do produto, toque na capa do mÃƒÂ³dulo que vocÃƒÂª quer treinar.'],
+  ['Abra o material', 'Toque em Ã¢â‚¬Å“Abrir materialÃ¢â‚¬Â para ver o treino na tela, sem sair da plataforma.'],
+  ['Baixe para guardar', 'Toque em Ã¢â‚¬Å“Baixar materialÃ¢â‚¬Â para salvar o arquivo no seu aparelho.']
 ];
 
 function renderModule(p, m) {
@@ -503,7 +566,7 @@ function renderModule(p, m) {
   $('moduleSub').textContent = m.descricao || '';
   const img = $('moduleCover');
   img.src = imgUrl(m.capa) || '';
-  img.alt = `Capa do módulo ${m.titulo}`;
+  img.alt = `Capa do mÃƒÂ³dulo ${m.titulo}`;
   $('backToModules').href = `#/p/${encodeURIComponent(p.slug)}`;
 
   const body = $('moduleBody');
@@ -515,7 +578,7 @@ function renderModule(p, m) {
     return;
   }
   if (!m.materiais.length) {
-    body.append(h('div', { class: 'empty' }, 'Os materiais deste módulo estão sendo preparados.'));
+    body.append(h('div', { class: 'empty' }, 'Os materiais deste mÃƒÂ³dulo estÃƒÂ£o sendo preparados.'));
     return;
   }
 
@@ -542,11 +605,11 @@ function materialCard(x, moduloNome) {
     h('div', { class: 'material-info' },
       h('div', { class: 'material-title' }, x.titulo),
       x.descricao ? h('div', { class: 'material-desc' }, x.descricao) : null,
-      moduloNome ? h('div', { class: 'material-from' }, `Módulo: ${moduloNome}`) : null),
+      moduloNome ? h('div', { class: 'material-from' }, `MÃƒÂ³dulo: ${moduloNome}`) : null),
     h('div', { class: 'material-actions' }, openBtn, dlBtn));
 }
 
-// ─── Visualizador / download ─────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Visualizador / download Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 let currentMaterial = null;
 
 async function signedUrl(path, opts) {
@@ -577,7 +640,7 @@ function carregarLivro() {
   return livroScript;
 }
 
-// Os elementos do modo livro podem não existir se o navegador ainda guardar um index.html antigo:
+// Os elementos do modo livro podem nÃƒÂ£o existir se o navegador ainda guardar um index.html antigo:
 // nesse caso o material abre normalmente no modo normal.
 function avisoLeitura(texto) {
   const n = $('pdfNotice');
@@ -631,7 +694,7 @@ async function aplicarModo(modo, salvar) {
   } catch (e) {
     if (token !== modoToken) return;
     await aplicarModo('normal', false);
-    avisoLeitura('O modo livro não está disponível agora. Abrimos no modo normal.');
+    avisoLeitura('O modo livro nÃƒÂ£o estÃƒÂ¡ disponÃƒÂ­vel agora. Abrimos no modo normal.');
   }
 }
 
@@ -639,7 +702,7 @@ async function openMaterial(x, btn) {
   setBusy(btn, true, 'Abrindo');
   const url = await signedUrl(x.arquivo);
   setBusy(btn, false);
-  if (!url) { alert('Não foi possível abrir este material agora. Tente novamente em instantes.'); return; }
+  if (!url) { alert('NÃƒÂ£o foi possÃƒÂ­vel abrir este material agora. Tente novamente em instantes.'); return; }
 
   currentMaterial = x;
   currentUrl = url;
@@ -670,12 +733,12 @@ async function downloadMaterial(x, btn) {
   const filename = x.titulo.replace(/[\\/:*?"<>|]+/g, ' ').trim() + '.pdf';
   const url = await signedUrl(x.arquivo, { download: filename });
   setBusy(btn, false);
-  if (!url) { alert('Não foi possível baixar este material agora. Tente novamente em instantes.'); return; }
+  if (!url) { alert('NÃƒÂ£o foi possÃƒÂ­vel baixar este material agora. Tente novamente em instantes.'); return; }
   const a = h('a', { href: url, download: filename, rel: 'noopener' });
   document.body.appendChild(a); a.click(); a.remove();
 }
 
-// ─── Painel Admin ────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Painel Admin Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 let editingId = null;
 let editingCapa = null;
 
@@ -692,7 +755,7 @@ async function renderAdmin() {
   await loadAdminAlunos();
 }
 
-// Lista completa (inclui produtos ocultos), guardada para a edição
+// Lista completa (inclui produtos ocultos), guardada para a ediÃƒÂ§ÃƒÂ£o
 async function fetchAllProdutos() {
   const { data } = await db.from('produtos').select('*').order('ordem', { ascending: true });
   S.adminProdutos = data || [];
@@ -756,12 +819,12 @@ async function addAcesso(ev) {
   msg.className = 'alert';
   const email = $('newEmail').value.trim().toLowerCase();
   const produtoId = $('newProduto').value;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Digite um e-mail válido.'; msg.classList.add('show'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Digite um e-mail vÃƒÂ¡lido.'; msg.classList.add('show'); return; }
   if (!produtoId) { msg.textContent = 'Escolha um produto.'; msg.classList.add('show'); return; }
 
   const btn = $('addBtn');
   setBusy(btn, true);
-  // 1) cadastra o aluno (sem trocar a origem de quem já existe) e garante o login ativo
+  // 1) cadastra o aluno (sem trocar a origem de quem jÃƒÂ¡ existe) e garante o login ativo
   let err = (await db.from('alunos').upsert({ email, origem: 'manual', ativo: true }, { onConflict: 'email', ignoreDuplicates: true })).error;
   if (!err) err = (await db.from('alunos').update({ ativo: true }).eq('email', email)).error;
   // 2) libera o produto escolhido
@@ -780,7 +843,7 @@ async function removeAcesso(a, btn) {
   btn.disabled = true;
   const del = await db.from('acessos').delete().eq('id', a.id);
   if (del.error) { btn.disabled = false; alert('Erro ao remover.'); return; }
-  // sem nenhum outro acesso ativo, o login também é desativado
+  // sem nenhum outro acesso ativo, o login tambÃƒÂ©m ÃƒÂ© desativado
   const rest = await db.from('acessos').select('id').eq('email', a.email).eq('ativo', true).limit(1);
   if (!rest.error && (!rest.data || !rest.data.length) && !ADMINS.includes(a.email)) {
     await db.from('alunos').update({ ativo: false }).eq('email', a.email);
@@ -797,7 +860,7 @@ async function loadAdminProdutos() {
     const src = imgUrl(p.capa_url);
     const edit = h('button', { class: 'btn btn-ghost btn-sm', type: 'button' }, 'Editar');
     edit.addEventListener('click', () => startEditProduto(p));
-    const mods = h('button', { class: 'btn btn-outline btn-sm', type: 'button' }, 'Módulos');
+    const mods = h('button', { class: 'btn btn-outline btn-sm', type: 'button' }, 'MÃƒÂ³dulos');
     mods.addEventListener('click', () => openAdminSub('openModulos', p));
     const hook = h('button', { class: 'btn btn-ghost btn-sm', type: 'button' }, 'Webhook');
     hook.addEventListener('click', () => openAdminSub('openWebhook', p));
@@ -805,7 +868,7 @@ async function loadAdminProdutos() {
       src ? h('img', { class: 'thumb', src, alt: '', loading: 'lazy', width: 56, height: 56 }) : h('div', { class: 'thumb' }),
       h('div', {}, h('strong', {}, p.nome), h('div', { class: 'muted' }, p.slug)),
       h('div', { class: 'muted mono' }, safeLink(p.link_compra) ? p.link_compra : 'Sem link de compra'),
-      p.ativo ? h('span', { class: 'tag green' }, 'Visível') : h('span', { class: 'tag red' }, 'Oculto'),
+      p.ativo ? h('span', { class: 'tag green' }, 'VisÃƒÂ­vel') : h('span', { class: 'tag red' }, 'Oculto'),
       h('div', { class: 'row-actions' }, mods, hook, edit)));
   });
 }
@@ -813,6 +876,7 @@ async function loadAdminProdutos() {
 function resetProdForm() {
   editingId = null; editingCapa = null;
   $('prodForm').reset();
+  $('pAppUrl').value = '';
   $('pOrdem').value = String((S.adminProdutos.length + 1) * 10);
   $('pAtivo').checked = true;
   $('prodFormTitle').textContent = 'Novo produto';
@@ -828,6 +892,7 @@ function startEditProduto(p) {
   $('pLink').value = p.link_compra || '';
   $('pDesc').value = p.descricao || '';
   $('pCodigo').value = p.kiwify_product_id || '';
+  $('pAppUrl').value = p.app_url || '';
   $('pOrdem').value = p.ordem ?? 0;
   $('pAtivo').checked = !!p.ativo;
   $('pFoto').value = '';
@@ -849,16 +914,17 @@ async function saveProduto(ev) {
   const linkRaw = $('pLink').value.trim();
   const link = linkRaw ? safeLink(linkRaw) : null;
   const codigo = $('pCodigo').value.trim() || null;
+  const appUrl = $('pAppUrl').value.trim() || null;
   const ordem = parseInt($('pOrdem').value, 10);
   const file = $('pFoto').files[0];
 
   if (!nome) return fail('Informe o nome do produto.');
-  if (linkRaw && !link) return fail('O link de compra precisa começar com https://');
-  if (codigo && !/^[0-9a-fA-F-]{8,64}$/.test(codigo)) return fail('O código da Kiwify deve conter apenas letras de a a f, números e hífens.');
-  if (!Number.isFinite(ordem) || ordem < 0) return fail('Informe uma ordem válida (número).');
+  if (linkRaw && !link) return fail('O link de compra precisa comeÃƒÂ§ar com https://');
+  if (codigo && !/^[0-9a-fA-F-]{8,64}$/.test(codigo)) return fail('O cÃƒÂ³digo da Kiwify deve conter apenas letras de a a f, nÃƒÂºmeros e hÃƒÂ­fens.');
+  if (!Number.isFinite(ordem) || ordem < 0) return fail('Informe uma ordem vÃƒÂ¡lida (nÃƒÂºmero).');
   if (file) {
     if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return fail('A foto deve ser PNG, JPG ou WebP.');
-    if (file.size > 3 * 1024 * 1024) return fail('A foto deve ter no máximo 3 MB.');
+    if (file.size > 3 * 1024 * 1024) return fail('A foto deve ter no mÃƒÂ¡ximo 3 MB.');
   }
 
   const btn = $('pSave');
@@ -872,13 +938,13 @@ async function saveProduto(ev) {
       const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
       const path = `produtos/${slug}-${Date.now()}.${ext}`;
       const up = await db.storage.from('images').upload(path, file, { contentType: file.type, upsert: false });
-      if (up.error) return fail('Não foi possível enviar a foto: ' + up.error.message);
+      if (up.error) return fail('NÃƒÂ£o foi possÃƒÂ­vel enviar a foto: ' + up.error.message);
       capa = db.storage.from('images').getPublicUrl(path).data.publicUrl;
     }
 
     const row = {
       nome, descricao: $('pDesc').value.trim() || null, link_compra: link,
-      kiwify_product_id: codigo, ordem, ativo: $('pAtivo').checked, capa_url: capa
+      kiwify_product_id: codigo, app_url: appUrl, ordem, ativo: $('pAtivo').checked, capa_url: capa
     };
     let res;
     if (editingId) {
@@ -890,7 +956,7 @@ async function saveProduto(ev) {
       }
     }
     if (res.error) {
-      return fail(res.error.code === '23505' ? 'Já existe um produto com esse código da Kiwify.' : 'Erro: ' + res.error.message);
+      return fail(res.error.code === '23505' ? 'JÃƒÂ¡ existe um produto com esse cÃƒÂ³digo da Kiwify.' : 'Erro: ' + res.error.message);
     }
 
     await loadCatalogData();
@@ -906,8 +972,8 @@ async function saveProduto(ev) {
   }
 }
 
-// ─── Telas de administração carregadas sob demanda (módulos, materiais, webhook) ──
-// O código fica em assets/js/admin.js e só é baixado quando o administrador abre uma delas.
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Telas de administraÃƒÂ§ÃƒÂ£o carregadas sob demanda (mÃƒÂ³dulos, materiais, webhook) Ã¢â€â‚¬Ã¢â€â‚¬
+// O cÃƒÂ³digo fica em assets/js/admin.js e sÃƒÂ³ ÃƒÂ© baixado quando o administrador abre uma delas.
 let adminScript = null;
 
 function loadAdminScript() {
@@ -928,18 +994,64 @@ async function openAdminSub(fn, produto) {
     await loadAdminScript();
     window.TIAdmin[fn](produto);
   } catch (e) {
-    alert('Não foi possível abrir esta tela agora. Verifique sua conexão e tente novamente.');
+    alert('NÃƒÂ£o foi possÃƒÂ­vel abrir esta tela agora. Verifique sua conexÃƒÂ£o e tente novamente.');
   }
 }
 
-// Peças que o admin.js reaproveita
+// PeÃƒÂ§as que o admin.js reaproveita
 window.TI = {
   db, S, h, $, clear, setBusy, safeLink, imgUrl, slugify, MSG, SUPABASE_URL,
   reloadProdutos: async () => { await loadCatalogData(); await loadAdminProdutos(); },
   invalidateCatalogs: () => { S.catalogs = {}; }
 };
 
-// ─── Inicialização ───────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ InicializaÃƒÂ§ÃƒÂ£o Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// Produtos na tela de login
+async function loadAuthProducts() {
+  try {
+    const { data } = await db.from('produtos').select('slug, nome, link_compra, capa_url').eq('ativo', true).order('ordem');
+    if (!data || !data.length) return;
+    
+    const grid = document.querySelector('.auth-products-grid');
+    if (!grid) return;
+    
+    clear(grid);
+    
+    data.forEach((p) => {
+      const link = safeLink(p.link_compra);
+      const capa = imgUrl(p.capa_url);
+      
+      if (link) {
+        const card = h('a', { class: 'auth-product', href: link, target: '_blank', rel: 'noopener' },
+          h('div', { class: 'auth-product-cover' },
+            capa ? h('img', { src: capa, alt: p.nome, loading: 'lazy' }) : h('div', { class: 'auth-product-placeholder' })),
+          h('div', { class: 'auth-product-name' }, p.nome));
+        grid.append(card);
+      } else {
+        const card = h('div', { class: 'auth-product auth-product-info' },
+          h('div', { class: 'auth-product-cover' },
+            capa ? h('img', { src: capa, alt: p.nome, loading: 'lazy' }) : h('div', { class: 'auth-product-placeholder' })),
+          h('div', { class: 'auth-product-name' }, p.nome));
+        grid.append(card);
+      }
+    });
+    
+    const authProducts = document.getElementById('authProducts');
+    if (authProducts && grid.children.length > 0) authProducts.hidden = false;
+  } catch (e) {
+    console.error('Erro ao carregar produtos:', e);
+  }
+}
+
+// App Frame Fullscreen
+function closeAppFrame() {
+  const appFrame = document.getElementById('appFrame');
+  const appIframe = document.getElementById('appIframe');
+  if (appFrame) appFrame.hidden = true;
+  if (appIframe) appIframe.src = '';
+  route();
+}
+
 function init() {
   $('authStepEmail').addEventListener('submit', doLogin);
   $('authStepCode').addEventListener('submit', doVerify);
@@ -951,6 +1063,7 @@ function init() {
   });
   $('adminBtn').addEventListener('click', () => { location.hash = '#/admin'; });
   $('pdfClose').addEventListener('click', closePdf);
+  $('appFrameClose').addEventListener('click', closeAppFrame);
   if ($('modeNormal')) $('modeNormal').addEventListener('click', () => { if (currentUrl) aplicarModo('normal', true); });
   if ($('modeLivro')) $('modeLivro').addEventListener('click', () => { if (currentUrl) aplicarModo('livro', true); });
   $('pdfDownload').addEventListener('click', () => { if (currentMaterial) downloadMaterial(currentMaterial, $('pdfDownload')); });
@@ -971,6 +1084,8 @@ function init() {
   });
 
   db.auth.onAuthStateChange((evt) => { if (evt === 'SIGNED_OUT' && S.email) leaveApp(); });
+  loadAuthProducts();
+  loadAuthProducts();
   resetProdForm();
   restoreSession();
 }
