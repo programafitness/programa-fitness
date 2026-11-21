@@ -7,6 +7,7 @@
 //  - Evento "teste_painel" (enviado pelo botão Testar do painel): confere assinatura e produto, sem alterar dados.
 //  - Ao liberar qualquer produto, envia e-mail de acesso com o nome do produto (uma única vez por pedido + produto).
 //    A Kiwify não envia acesso para área de membros externa, então este e-mail é o único que o aluno recebe.
+//  - Produto com app embutido (produtos.app_url): cria a conta do comprador no app antes de mandar o e-mail.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 
@@ -189,11 +190,40 @@ function codigoProduto(body: any): string {
   return String(v).trim().toLowerCase();
 }
 
-type Produto = { id: string; slug: string; nome: string | null; kiwify_product_id: string | null };
+type Produto = { id: string; slug: string; nome: string | null; kiwify_product_id: string | null; app_url: string | null };
+const CAMPOS_PRODUTO = "id, slug, nome, kiwify_product_id, app_url";
+
+// Produto com app embutido: o app tem cadastro próprio, então criamos a conta do comprador lá
+// (POST <origem do app>/api/cadastrar { nome, email }). 409 = já tem conta, tudo certo.
+// Falha aqui não derruba a liberação: só registra no log.
+async function cadastrarNoApp(appUrl: string, nome: string, email: string, orderId: string) {
+  let origem: string;
+  try {
+    const u = new URL(appUrl);
+    if (u.protocol !== "https:") throw new Error("app_url sem https");
+    origem = u.origin;
+  } catch (e) {
+    console.error("[APP] app_url invalida", orderId, String(e));
+    return;
+  }
+  try {
+    const r = await fetch(`${origem}/api/cadastrar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome: nome.slice(0, 80), email }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (r.ok) console.log("[APP] conta criada", origem, orderId, mask(email));
+    else if (r.status === 409) console.log("[APP] conta ja existia", origem, orderId, mask(email));
+    else console.error("[APP] falha ao criar conta", origem, orderId, r.status, (await r.text()).slice(0, 200));
+  } catch (e) {
+    console.error("[APP] erro ao chamar o app", origem, orderId, String(e));
+  }
+}
 
 // Produto pelo endereço (?produto=slug) e o token próprio dele, se houver
 async function produtoPorSlug(slug: string) {
-  const p = await supabase.from("produtos").select("id, slug, nome, kiwify_product_id").eq("slug", slug).maybeSingle();
+  const p = await supabase.from("produtos").select(CAMPOS_PRODUTO).eq("slug", slug).maybeSingle();
   if (p.error) return { erro: p.error.message as string };
   if (!p.data) return { produto: null as Produto | null, token: "" };
   const t = await supabase.from("produto_webhooks").select("token").eq("produto_id", p.data.id).maybeSingle();
@@ -203,7 +233,7 @@ async function produtoPorSlug(slug: string) {
 
 // Sem ?produto: descobre o produto pelo código que vem no aviso
 async function produtoPorCodigo(codigo: string) {
-  const { data, error } = await supabase.from("produtos").select("id, slug, nome, kiwify_product_id")
+  const { data, error } = await supabase.from("produtos").select(CAMPOS_PRODUTO)
     .not("kiwify_product_id", "is", null);
   if (error) return { erro: error.message as string };
   const lista = (data ?? []) as Produto[];
@@ -324,6 +354,13 @@ Deno.serve(async (req) => {
       if (!erro) {
         erro = (await supabase.from("acessos")
           .upsert({ email, produto_id: produto.id, ativo: true, origem: "kiwify" }, { onConflict: "email,produto_id" })).error;
+      }
+
+      // Conta no app embutido, antes do e-mail: quando o aluno recebe o e-mail, o login no app já funciona
+      if (!erro && produto.app_url) {
+        const c = body?.Customer ?? body?.customer ?? {};
+        const nomeCliente = String(c.full_name || c.first_name || "").trim() || email.split("@")[0];
+        await cadastrarNoApp(produto.app_url, nomeCliente, email, orderId);
       }
 
       // E-mail de acesso, para todo produto (uma única vez por pedido + produto)
