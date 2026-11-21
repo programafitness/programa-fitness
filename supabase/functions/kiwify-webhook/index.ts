@@ -5,7 +5,8 @@
 //  - Sem ?produto, o produto é identificado pelo código que vem no aviso (produtos.kiwify_product_id).
 //  - Cada compra libera SÓ o produto comprado; reembolso e chargeback retiram só aquele produto.
 //  - Evento "teste_painel" (enviado pelo botão Testar do painel): confere assinatura e produto, sem alterar dados.
-//  - Ao liberar o Treino Inteligente, envia e-mail de boas-vindas (uma única vez por order_id).
+//  - Ao liberar qualquer produto, envia e-mail de acesso com o nome do produto (uma única vez por pedido + produto).
+//    A Kiwify não envia acesso para área de membros externa, então este e-mail é o único que o aluno recebe.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 
@@ -55,8 +56,15 @@ async function enviarEmail(params: EmailParams): Promise<EmailResult> {
   }
 }
 
-function emailBoasVindas(email: string, primeiroNome: string): EmailParams {
-  const nome = primeiroNome || "aluno";
+// Nome do cliente e do produto entram no HTML: escapa para não quebrar o e-mail
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function emailBoasVindas(email: string, primeiroNome: string, nomeProdutoTexto: string): EmailParams {
+  const nomeTexto = primeiroNome || "aluno";
+  const nome = escapeHtml(nomeTexto);
+  const produto = escapeHtml(nomeProdutoTexto);
   const html = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -81,12 +89,12 @@ function emailBoasVindas(email: string, primeiroNome: string): EmailParams {
   </div>
   <div class="content">
     <p>Olá, <strong>${nome}</strong>!</p>
-    <p>Seu acesso ao <strong>Treino Inteligente</strong> está liberado. Você já pode acessar todos os treinos, materiais e recursos da plataforma.</p>
+    <p>Sua compra foi aprovada e seu acesso ao <strong>${produto}</strong> está liberado. Ele já está disponível na área de membros do Treino Inteligente.</p>
     <p style="text-align: center;">
       <a href="https://membros.treinointeligente.com.br/" class="cta">Acessar Plataforma</a>
     </p>
     <p><strong>Como entrar:</strong></p>
-    <p>Use o mesmo e-mail da compra: <strong>${email}</strong></p>
+    <p>Clique no botão acima e use o mesmo e-mail da compra: <strong>${escapeHtml(email)}</strong>. Depois, toque no card <strong>${produto}</strong>.</p>
     <p>Se precisar de ajuda, entre em contato pelo e-mail <a href="mailto:suporte@treinointeligente.com.br" style="color: #80FF00;">suporte@treinointeligente.com.br</a>.</p>
     <p style="margin-top: 24px;">Bons treinos!</p>
   </div>
@@ -98,14 +106,14 @@ function emailBoasVindas(email: string, primeiroNome: string): EmailParams {
 </html>
 `;
 
-  const texto = `Olá, ${nome}!
+  const texto = `Olá, ${nomeTexto}!
 
-Seu acesso ao Treino Inteligente está liberado. Você já pode acessar todos os treinos, materiais e recursos da plataforma.
+Sua compra foi aprovada e seu acesso ao ${nomeProdutoTexto} está liberado. Ele já está disponível na área de membros do Treino Inteligente.
 
 Acesse: https://membros.treinointeligente.com.br/
 
 Como entrar:
-Use o mesmo e-mail da compra: ${email}
+Use o mesmo e-mail da compra: ${email}. Depois, toque no card ${nomeProdutoTexto}.
 
 Se precisar de ajuda, entre em contato pelo e-mail suporte@treinointeligente.com.br.
 
@@ -116,7 +124,7 @@ Treino Inteligente`;
   return {
     from: "Treino Inteligente <acesso@treinointeligente.com.br>",
     to: email,
-    subject: "Seu acesso ao Treino Inteligente está liberado",
+    subject: `Seu acesso ao ${nomeProdutoTexto} está liberado`,
     html,
     text: texto,
     reply_to: "suporte@treinointeligente.com.br",
@@ -181,11 +189,11 @@ function codigoProduto(body: any): string {
   return String(v).trim().toLowerCase();
 }
 
-type Produto = { id: string; slug: string; kiwify_product_id: string | null };
+type Produto = { id: string; slug: string; nome: string | null; kiwify_product_id: string | null };
 
 // Produto pelo endereço (?produto=slug) e o token próprio dele, se houver
 async function produtoPorSlug(slug: string) {
-  const p = await supabase.from("produtos").select("id, slug, kiwify_product_id").eq("slug", slug).maybeSingle();
+  const p = await supabase.from("produtos").select("id, slug, nome, kiwify_product_id").eq("slug", slug).maybeSingle();
   if (p.error) return { erro: p.error.message as string };
   if (!p.data) return { produto: null as Produto | null, token: "" };
   const t = await supabase.from("produto_webhooks").select("token").eq("produto_id", p.data.id).maybeSingle();
@@ -195,7 +203,7 @@ async function produtoPorSlug(slug: string) {
 
 // Sem ?produto: descobre o produto pelo código que vem no aviso
 async function produtoPorCodigo(codigo: string) {
-  const { data, error } = await supabase.from("produtos").select("id, slug, kiwify_product_id")
+  const { data, error } = await supabase.from("produtos").select("id, slug, nome, kiwify_product_id")
     .not("kiwify_product_id", "is", null);
   if (error) return { erro: error.message as string };
   const lista = (data ?? []) as Produto[];
@@ -318,11 +326,11 @@ Deno.serve(async (req) => {
           .upsert({ email, produto_id: produto.id, ativo: true, origem: "kiwify" }, { onConflict: "email,produto_id" })).error;
       }
 
-      // E-mail de boas-vindas ao Treino Inteligente (uma única vez por pedido)
-      if (!erro && produto.slug === "treino-inteligente") {
+      // E-mail de acesso, para todo produto (uma única vez por pedido + produto)
+      if (!erro) {
         // limit(1) em vez de maybeSingle(): com 2+ linhas o maybeSingle() dá erro e o envio era pulado sem log
         const jaEnviado = await supabase.from("emails_enviados")
-          .select("id").eq("order_id", orderId).eq("tipo", "boas-vindas").limit(1);
+          .select("id").eq("order_id", orderId).eq("produto_id", produto.id).eq("tipo", "boas-vindas").limit(1);
         if (jaEnviado.error) {
           // não derruba a liberação do acesso; só registra para investigar
           console.error("[EMAIL] erro ao consultar emails_enviados", orderId, jaEnviado.error.message);
@@ -330,9 +338,10 @@ Deno.serve(async (req) => {
           console.log("[EMAIL] boas-vindas ja enviado", orderId);
         } else {
           const primeiroNome = String(body?.Customer?.first_name || body?.customer?.first_name || "").trim();
-          const resultado = await enviarEmail(emailBoasVindas(email, primeiroNome));
-          if (resultado.ok) console.log("[EMAIL] boas-vindas enviado", orderId, mask(email), resultado.id);
-          else console.error("[EMAIL] falha no envio do boas-vindas", orderId, resultado.error);
+          const nomeProduto = String(produto.nome || "").trim() || "Treino Inteligente";
+          const resultado = await enviarEmail(emailBoasVindas(email, primeiroNome, nomeProduto));
+          if (resultado.ok) console.log("[EMAIL] boas-vindas enviado", produto.slug, orderId, mask(email), resultado.id);
+          else console.error("[EMAIL] falha no envio do boas-vindas", produto.slug, orderId, resultado.error);
           const reg = await supabase.from("emails_enviados").insert({
             order_id: orderId,
             email,
