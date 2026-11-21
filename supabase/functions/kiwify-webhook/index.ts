@@ -207,13 +207,15 @@ async function cadastrarNoApp(appUrl: string, nome: string, email: string, order
     return;
   }
   try {
+    // Segredo compartilhado (APP_CADASTRO_SEGREDO aqui = CADASTRO_SEGREDO no app): o app marca a conta como "kiwify"
+    const segredo = Deno.env.get("APP_CADASTRO_SEGREDO") ?? "";
     const r = await fetch(`${origem}/api/cadastrar`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(segredo ? { "x-cadastro-segredo": segredo } : {}) },
       body: JSON.stringify({ nome: nome.slice(0, 80), email }),
       signal: AbortSignal.timeout(10_000),
     });
-    if (r.ok) console.log("[APP] conta criada", origem, orderId, mask(email));
+    if (r.ok) console.log("[APP] conta criada ou atualizada", origem, orderId, mask(email));
     else if (r.status === 409) console.log("[APP] conta ja existia", origem, orderId, mask(email));
     else console.error("[APP] falha ao criar conta", origem, orderId, r.status, (await r.text()).slice(0, 200));
   } catch (e) {
