@@ -954,7 +954,7 @@ function loadAdminScript() {
   if (adminScript) return adminScript;
   adminScript = new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'assets/js/admin.js?v=2';
+    s.src = 'assets/js/admin.js?v=3';
     s.onload = resolve;
     s.onerror = () => { adminScript = null; reject(new Error('admin.js')); };
     document.head.appendChild(s);

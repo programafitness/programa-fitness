@@ -98,7 +98,7 @@ h1, h2, h3, p { margin: 0; }
   color: var(--text); font-size: 16px; /* 16px evita zoom automático no iPhone */
   transition: border-color .15s;
 }
-.field-textarea { min-height: 96px; resize: vertical; }
+.field-textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
 .field-input:focus, .field-select:focus, .field-textarea:focus { outline: none; border-color: var(--lime); box-shadow: 0 0 0 3px rgba(128, 255, 0, .18); }
 .field-input.error { border-color: var(--danger); }
 .field-hint { margin-top: 6px; font-size: 12px; color: var(--text-3); }

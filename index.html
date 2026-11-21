@@ -14,14 +14,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Treino Inteligente">
-<link rel="apple-touch-icon" href="assets/img/icons/apple-touch-icon.png?v=5">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/img/icons/favicon-32.png?v=5">
-<link rel="icon" type="image/png" sizes="192x192" href="assets/img/icons/icon-192.png?v=5">
+<link rel="apple-touch-icon" href="assets/img/icons/apple-touch-icon.png?v=6">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/icons/favicon-32.png?v=6">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/img/icons/icon-192.png?v=6">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:ital,wght@0,800;0,900;1,900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/app.css?v=5">
+<link rel="stylesheet" href="assets/css/app.css?v=6">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -193,7 +193,7 @@
           <div class="form-grid two">
             <label class="field"><span class="field-label">Nome do produto</span><input class="field-input" id="pNome" maxlength="80" required></label>
             <label class="field"><span class="field-label">Link de compra (Kiwify)</span><input class="field-input" id="pLink" type="url" inputmode="url" placeholder="https://pay.kiwify.com.br/..." autocomplete="off"></label>
-            <label class="field span-2"><span class="field-label">Descrição</span><textarea class="field-textarea" id="pDesc" maxlength="300"></textarea></label>
+            <label class="field span-2"><span class="field-label">Descrição</span><textarea class="field-textarea" id="pDesc" maxlength="1500" rows="6"></textarea></label>
             <label class="field"><span class="field-label">Código do produto na Kiwify</span><input class="field-input" id="pCodigo" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false"><span class="field-hint">Libera o acesso automático quando a compra é aprovada.</span></label>
             <label class="field span-2"><span class="field-label">URL do App (opcional)</span><input class="field-input" id="pAppUrl" type="url" placeholder="https://..." autocomplete="off"><span class="field-hint">Se preenchido, o produto abrirá este app em iframe, sem mostrar módulos.</span></label>
             <label class="field"><span class="field-label">Ordem na Home</span><input class="field-input" id="pOrdem" type="number" min="0" step="1" value="10"></label>
@@ -253,6 +253,6 @@
   </div>
 </div>
 
-<script src="assets/js/app.js?v=5"></script>
+<script src="assets/js/app.js?v=6"></script>
 </body>
 </html>

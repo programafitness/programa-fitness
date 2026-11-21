@@ -114,7 +114,7 @@ async function openModulos(p, edit) {
 function moduloForm(p, mods, edit) {
   const f = {
     titulo: h('input', { class: 'field-input', maxlength: 80, required: true, id: 'mTitulo' }),
-    desc: h('textarea', { class: 'field-textarea', maxlength: 200, id: 'mDesc' }),
+    desc: h('textarea', { class: 'field-textarea', maxlength: 1000, rows: 5, id: 'mDesc' }),
     ordem: h('input', { class: 'field-input', type: 'number', min: 0, step: 1, id: 'mOrdem' }),
     capa: h('input', { class: 'field-input', type: 'file', accept: 'image/png,image/jpeg,image/webp', id: 'mCapa' }),
     prev: h('img', { class: 'cover-preview tall', alt: '', hidden: true }),
@@ -229,7 +229,7 @@ async function openMateriais(p, m, edit) {
 function materialForm(p, m, mats, edit) {
   const f = {
     titulo: h('input', { class: 'field-input', maxlength: 100, required: true, id: 'xTitulo' }),
-    desc: h('input', { class: 'field-input', maxlength: 200, id: 'xDesc' }),
+    desc: h('input', { class: 'field-input', maxlength: 400, id: 'xDesc' }),
     grupo: h('input', { class: 'field-input', maxlength: 40, id: 'xGrupo', placeholder: 'Ex.: Academia, Em casa' }),
     ordem: h('input', { class: 'field-input', type: 'number', min: 0, step: 1, id: 'xOrdem' }),
     arq: h('input', { class: 'field-input', type: 'file', accept: 'application/pdf,.pdf', id: 'xArq' }),
